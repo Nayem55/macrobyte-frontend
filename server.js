@@ -22,7 +22,7 @@ const defaults = {
 const defaultServices = [
   { title:'Online & Digital Services', icon:'▤', description:'Guidance and assistance with common online applications and digital tasks.', tags:['Applications','Documents','Online help'], order:1, active:true },
   { title:'IT Maintenance & Repair', icon:'⚙', description:'Practical support to keep computers, printers and essential equipment working.', tags:['PC repair','Printers','Maintenance'], order:2, active:true },
-  { title:'Installation & Setup', icon:'⌘', description:'Smart installation and setup support for home, office and business technology.', tags:['Networking','CCTV','Setup'], order:3, active:true },
+  { title:'Office Setup & Installation', icon:'⌘', description:'A tailored office setup service for the PCs, laptops, CCTV, networking, printers and practical equipment your team needs.', tags:['Office setup','CCTV','Networking'], order:3, active:true },
   { title:'Creative & Business Support', icon:'✦', description:'Design and business support services that help ideas look professional.', tags:['Design','Printing','Branding'], order:4, active:true }
 ];
 const defaultProducts = [
@@ -51,7 +51,7 @@ const catalogSeed = [
 const serviceDetails = [
   {title:'Online & Digital Services',details:'Friendly, practical help for online applications, document preparation, registration forms and everyday digital tasks. Tell us what you are trying to complete and we will guide the right next step.',features:['Online application assistance','Document scanning and preparation','Form and registration guidance','Status and follow-up support'],specs:[['Best for','Individuals and small businesses'],['How it starts','Share your requirement'],['Delivery','Depends on service type']]},
   {title:'IT Maintenance & Repair',details:'Practical diagnosis and maintenance support for computers, printers and essential equipment. We focus on clear recommendations before work begins.',features:['Computer diagnostics','Printer setup and troubleshooting','Hardware maintenance','Software and performance checks'],specs:[['Best for','Home, shop and office equipment'],['Service format','Drop-off or arranged support'],['Next step','Describe the issue and device model']]},
-  {title:'Installation & Setup',details:'From a single device to a small office setup, MacroByte helps plan and configure the equipment your space needs.',features:['Router and network setup','CCTV installation coordination','Computer and printer setup','Basic cable and device organisation'],specs:[['Best for','Home, office and retail spaces'],['Planning','Requirement assessment first'],['Quotation','Provided before project confirmation']]},
+  {title:'Office Setup & Installation',icon:'⌘',description:'A tailored office setup service for the PCs, laptops, CCTV, networking, printers and practical equipment your team needs.',tags:['Office setup','CCTV','Networking'],order:3,active:true,details:'We plan and deliver a practical office setup around your team, space and work needs. This can include desktop PCs, laptops, printers, CCTV cameras, Wi-Fi and networking, access control, cabling, power accessories and the everyday items needed to get an office operating. Every office is different, so we assess your requirements first and provide a tailored quotation rather than a fixed price.',features:['Desktop PC and laptop sourcing','CCTV, access control and attendance setup','Wi-Fi, router and network configuration','Printer, scanner and shared-device setup','Structured cabling and workstation organisation','Office supplies and essential accessories'],specs:[['Best for','New offices, expansions and relocations'],['How it starts','Tell us your team size, space and requirements'],['Quotation','Custom quote after requirement assessment'],['Pricing','No fixed price — based on your scope and equipment']]},
   {title:'Creative & Business Support',details:'Professional, practical creative support for businesses that need clear print-ready materials, simple visuals and dependable execution.',features:['Graphic design support','Print-ready artwork','Business documents','Branding and promotional materials'],specs:[['Best for','Start-ups, shops and local businesses'],['Workflow','Brief, draft, revise, finalise'],['Output','Digital or print-ready files']]}
 ];
 async function getDb() {
@@ -63,6 +63,7 @@ async function getDb() {
   if (!await db.collection('products').countDocuments()) await db.collection('products').insertMany(defaultProducts);
   if (!await db.collection('settings').findOne({key:'catalog-seed-v2'})) { for (const product of catalogSeed) await db.collection('products').updateOne({slug:product.slug},{$setOnInsert:product},{upsert:true}); await db.collection('settings').insertOne({key:'catalog-seed-v2',createdAt:new Date()}); }
   if (!await db.collection('settings').findOne({key:'service-detail-seed-v1'})) { for (const service of serviceDetails) await db.collection('services').updateOne({title:service.title},{$set:service}); await db.collection('settings').insertOne({key:'service-detail-seed-v1',createdAt:new Date()}); }
+  if (!await db.collection('settings').findOne({key:'service-detail-seed-v2'})) { const office=serviceDetails.find(s=>s.title==='Office Setup & Installation'); await db.collection('services').updateOne({title:'Installation & Setup'},{$set:office}); await db.collection('settings').insertOne({key:'service-detail-seed-v2',createdAt:new Date()}); }
   if (!await db.collection('admins').findOne({username:'admin'})) await db.collection('admins').insertOne({username:'admin', password:await bcrypt.hash('macrobyte2026', 12), createdAt:new Date()});
   return db;
 }
@@ -90,6 +91,22 @@ api.get('/api/admin/enquiries',auth,async(_q,res)=>{ const d=await getDb();res.j
 api.patch('/api/admin/enquiries/:id',auth,async(req,res)=>{ const d=await getDb();await d.collection('enquiries').updateOne({_id:objectId(req.params.id)},{$set:{status:req.body.status}});res.json({ok:true}); });
 api.use((err,_q,res,_next)=>res.status(500).json({message:err.message||'Server error'}));
 
-const publicApp = express(); publicApp.use(api); publicApp.get('/',(_q,res)=>{ const html=fs.readFileSync(path.join(root,'macrobyte-trade-website.html'),'utf8').replace('</body>','<script src="/dynamic.js"></script></body>');res.type('html').send(html); }); publicApp.use(express.static(root));
+const publicApp = express();
+const publicCss='<link rel="stylesheet" href="/light.css"><link rel="stylesheet" href="/header-theme.css"><link rel="stylesheet" href="/contrast.css"><link rel="stylesheet" href="/gallery.css"><link rel="stylesheet" href="/site-polish.css"><script src="/media.js"></script>';
+const sendPublicPage = page => (_q,res) => {
+  const html=fs.readFileSync(path.join(root,page+'.html'),'utf8').replace('</head>',publicCss+'</head>');
+  res.type('html').send(html);
+};
+publicApp.use(api);
+publicApp.get('/',(_q,res)=>{
+  const html=fs.readFileSync(path.join(root,'macrobyte-trade-website.html'),'utf8')
+    .replace('</head>',publicCss+'</head>')
+    .replace('</body>','<script src="/dynamic.js"></script></body>');
+  res.type('html').send(html);
+});
+publicApp.get('/product.html',sendPublicPage('product'));
+publicApp.get('/service.html',sendPublicPage('service'));
+publicApp.get('/category.html',sendPublicPage('category'));
+publicApp.use(express.static(root));
 const adminApp = express(); adminApp.use(api); adminApp.use(express.static(path.join(root,'admin'))); adminApp.use((_q,res)=>res.sendFile(path.join(root,'admin','index.html')));
 Promise.all([getDb().catch(e=>console.error('MongoDB unavailable at startup:',e.message)), new Promise(r=>publicApp.listen(publicPort,'0.0.0.0',r)), new Promise(r=>adminApp.listen(adminPort,'0.0.0.0',r))]).then(()=>console.log(`Macrobyte public: http://localhost:${publicPort} | admin: http://localhost:${adminPort}`));

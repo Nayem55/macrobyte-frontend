@@ -1,0 +1,23 @@
+/* Shared visual system — loaded with the document so the first paint is light. */
+:root{color-scheme:light;--bg:#f7f5f0;--panel:#fff;--ink:#18202b;--muted:#526174;--line:rgba(24,32,43,.14);--orange:#f07800}
+html,body{background:var(--bg)!important;color:var(--ink)!important}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.topline{background:#111622!important;color:#d8dfeb!important;border-color:rgba(255,255,255,.1)!important}
+.header,header{background:rgba(12,16,24,.97)!important;color:#f7f9fc!important;border-color:rgba(255,255,255,.1)!important}
+.topline{position:sticky;top:0;z-index:60}.topline+.header,.topline+header{position:sticky;top:33px;z-index:59;box-shadow:0 7px 18px rgba(10,14,22,.12)}
+.brand,.header .brand,.brandtext{color:#f7f9fc!important;text-shadow:none!important}
+.brand b,.brandtext span{color:#ff850c!important}
+.brand small,.brandtext small{color:#c7d0df!important}
+.brand img{background:transparent!important;mix-blend-mode:screen;filter:drop-shadow(0 2px 5px rgba(0,0,0,.35))}
+.navlinks a,nav a,.back{color:#e1e7f0!important}.navlinks a:hover,nav a:hover{color:#ff9a2f!important}
+.hero,.services,.catalog,.process,.contact{color:var(--ink)!important}
+.hero h1,.hero p,.section-head h2,.section-head p,.service-card h3,.service-card p,.product-info h3,.product-info p,.process-card h3,.process-card p,.why-panel h3,.why-panel p,.contact-info h2,.contact-info>p{color:inherit!important}
+.hero p,.section-head p,.service-card p,.product-info p,.process-card p,.why-panel p,.contact-info>p,.description{color:var(--muted)!important}
+.category-home-card,.service-card,.product-card,.process-card,.contact-form,.why-panel,.catalog-card{background:#fff!important;color:var(--ink)!important;border-color:var(--line)!important;box-shadow:0 10px 25px rgba(24,32,43,.07)!important}
+.category-home-card{overflow:hidden}.category-home-card img{opacity:1!important}.category-home-card h3{color:var(--ink)!important}.category-home-card a{color:#b65d00!important}
+.product-art{background:#f2eee6!important}.catalog-search,.tabs,.metrics{background:#fff!important}.filter-chip{background:#fff!important;color:#354151!important}
+.footer{background:#111722!important;color:#dbe2ec!important}.footer p,.footer-links a,.footer-links span{color:#b8c3d3!important}
+.visual{background:#fff!important;border-color:var(--line)!important}.visual .label{color:#ad5c00!important;background:#fff4e4!important;border-color:#f4b362!important}
+.whatsapp,.whatsapp-float{background:linear-gradient(135deg,#ffab28,#f06c00)!important;color:#211506!important}
+.quote-note{color:#9b5100!important;background:#fff1df;border-left:3px solid #f07800;border-radius:7px;padding:10px 12px;font-weight:700;font-size:13px}
+@media(max-width:760px){.brand img{width:42px!important;height:42px!important}.brandtext{font-size:16px!important}}
