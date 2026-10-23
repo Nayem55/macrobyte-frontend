@@ -7,3 +7,9 @@ document.querySelectorAll('a.brand').forEach(brand=>{
 document.querySelectorAll('.footer .brand').forEach(brand=>{
   brand.innerHTML='<img src="/assets/macrobyte-logo.png" alt="MacroByte Trade">';
 });
+
+/* The original template also had standalone hero and About-logo images. */
+document.querySelectorAll('img[alt*="MacroByte" i]').forEach(image=>{
+  image.src='/assets/macrobyte-logo.png';
+  image.alt='MacroByte Trade';
+});
