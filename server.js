@@ -131,6 +131,12 @@ const publicCss='<link rel="stylesheet" href="/light.css"><link rel="stylesheet"
 const brandImage='<img src="/assets/macrobyte-logo.png" alt="MacroByte Trade">';
 const applyBrand=html=>html
   .replace(/(<img\b[^>]*\bsrc=")data:image\/[^"]+("(?=[^>]*\balt="MacroByte[^"]*"[^>]*>))/g,'$1/assets/macrobyte-logo.png$2')
+  .replace(/<span class="brandtext">[\s\S]*?<\/span>/g,'')
+  .replace(/href="\/?#home"/g,'href="/"')
+  .replace(/href="\/?#services"/g,'href="/services.html"')
+  .replace(/href="\/?#products"/g,'href="/products.html"')
+  .replace(/href="\/?#about"/g,'href="/about.html"')
+  .replace(/href="\/?#contact"/g,'href="/contact.html"')
   .replace(/<a class="brand" href="\/">[\s\S]*?<\/a>/g,`<a class="brand" href="/" aria-label="MacroByte Trade home">${brandImage}</a>`);
 const sendPublicPage = page => (_q,res) => {
   const html=applyBrand(fs.readFileSync(path.join(root,page+'.html'),'utf8')).replace('</head>',publicCss+'</head>');
@@ -146,6 +152,10 @@ publicApp.get('/',(_q,res)=>{
 publicApp.get('/product.html',sendPublicPage('product'));
 publicApp.get('/service.html',sendPublicPage('service'));
 publicApp.get('/category.html',sendPublicPage('category'));
+publicApp.get('/services.html',sendPublicPage('services'));
+publicApp.get('/products.html',sendPublicPage('products'));
+publicApp.get('/about.html',sendPublicPage('about'));
+publicApp.get('/contact.html',sendPublicPage('contact'));
 publicApp.use(express.static(root));
 const adminApp = express(); adminApp.use(api); adminApp.use(express.static(path.join(root,'admin'))); adminApp.use((_q,res)=>res.sendFile(path.join(root,'admin','index.html')));
 Promise.all([getDb().catch(e=>console.error('MongoDB unavailable at startup:',e.message)), new Promise(r=>publicApp.listen(publicPort,'0.0.0.0',r)), new Promise(r=>adminApp.listen(adminPort,'0.0.0.0',r))]).then(()=>console.log(`Macrobyte public: http://localhost:${publicPort} | admin: http://localhost:${adminPort}`));
