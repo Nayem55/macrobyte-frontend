@@ -154,7 +154,7 @@ api.patch('/api/admin/enquiries/:id',auth,async(req,res)=>{ const d=await getDb(
 api.use((err,_q,res,_next)=>res.status(500).json({message:err.message||'Server error'}));
 
 const publicApp = express();
-const publicCss='<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/light.css"><link rel="stylesheet" href="/header-theme.css"><link rel="stylesheet" href="/contrast.css"><link rel="stylesheet" href="/gallery.css"><link rel="stylesheet" href="/site-polish.css"><link rel="stylesheet" href="/ecommerce.css"><link rel="stylesheet" href="/cart.css"><script src="/media.js"></script><script defer src="/cart.js"></script><script defer src="/site-header.js"></script>';
+const publicCss='<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/light.css"><link rel="stylesheet" href="/header-theme.css"><link rel="stylesheet" href="/contrast.css"><link rel="stylesheet" href="/gallery.css"><link rel="stylesheet" href="/site-polish.css"><link rel="stylesheet" href="/ecommerce.css"><link rel="stylesheet" href="/cart.css"><link rel="stylesheet" href="/header-fix.css"><script src="/media.js"></script><script defer src="/cart.js"></script><script defer src="/site-header.js"></script>';
 const brandImage='<img src="/assets/macrobyte-logo.png" alt="MacroByte Trade">';
 const applyBrand=html=>html
   .replace(/(<img\b[^>]*\bsrc=")data:image\/[^"]+("(?=[^>]*\balt="MacroByte[^"]*"[^>]*>))/g,'$1/assets/macrobyte-logo.png$2')
