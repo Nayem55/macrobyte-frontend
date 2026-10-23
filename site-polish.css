@@ -15,3 +15,15 @@ html,body{background:var(--bg)!important;color:var(--ink)!important}body{font-fa
 .footer{background:linear-gradient(135deg,#fff,#eef3ff)!important;color:var(--brand-blue-deep)!important;border-top:1px solid #d7e0f2}.footer p,.footer-links a,.footer-links span{color:#52617b!important}.footer h4,.footer strong{color:var(--brand-blue-deep)!important}.footer .brand{height:78px!important}.footer .brand img{width:172px!important;height:76px!important}.footer-bottom{border-color:#cbd7ee!important;color:#5e6d85!important}
 .menu-toggle{color:var(--brand-blue)!important;border-color:#cfd8ed!important;background:#fff!important}
 @media(max-width:760px){.topline+.header,.topline+header{top:0}.topline{display:none!important}.brand,.header .brand{min-width:136px!important;height:60px}.brand img{width:132px!important;height:55px!important}.nav-actions>.btn{display:none!important}.service-groups,.page-grid,.about-points,.contact-page{grid-template-columns:1fr}.service-group{padding:17px}}
+/* The supplied logo is the complete wordmark; never render legacy text beside it. */
+a.brand {
+  font-size: 0 !important;
+  color: transparent !important;
+}
+
+a.brand > small,
+a.brand > b,
+a.brand > .brandtext {
+  display: none !important;
+  font-size: 0 !important;
+}

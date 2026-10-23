@@ -127,7 +127,7 @@ api.patch('/api/admin/enquiries/:id',auth,async(req,res)=>{ const d=await getDb(
 api.use((err,_q,res,_next)=>res.status(500).json({message:err.message||'Server error'}));
 
 const publicApp = express();
-const publicCss='<link rel="stylesheet" href="/light.css"><link rel="stylesheet" href="/header-theme.css"><link rel="stylesheet" href="/contrast.css"><link rel="stylesheet" href="/gallery.css"><link rel="stylesheet" href="/site-polish.css"><script src="/media.js"></script>';
+const publicCss='<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/light.css"><link rel="stylesheet" href="/header-theme.css"><link rel="stylesheet" href="/contrast.css"><link rel="stylesheet" href="/gallery.css"><link rel="stylesheet" href="/site-polish.css"><script src="/media.js"></script>';
 const brandImage='<img src="/assets/macrobyte-logo.png" alt="MacroByte Trade">';
 const applyBrand=html=>html
   .replace(/(<img\b[^>]*\bsrc=")data:image\/[^"]+("(?=[^>]*\balt="MacroByte[^"]*"[^>]*>))/g,'$1/assets/macrobyte-logo.png$2')
@@ -137,7 +137,7 @@ const applyBrand=html=>html
   .replace(/href="\/?#products"/g,'href="/products.html"')
   .replace(/href="\/?#about"/g,'href="/about.html"')
   .replace(/href="\/?#contact"/g,'href="/contact.html"')
-  .replace(/<a class="brand" href="\/">[\s\S]*?<\/a>/g,`<a class="brand" href="/" aria-label="MacroByte Trade home">${brandImage}</a>`);
+  .replace(/<a class="brand"[^>]*>[\s\S]*?<\/a>/g,`<a class="brand" href="/" aria-label="MacroByte Trade home">${brandImage}</a>`);
 const sendPublicPage = page => (_q,res) => {
   const html=applyBrand(fs.readFileSync(path.join(root,page+'.html'),'utf8')).replace('</head>',publicCss+'</head>');
   res.type('html').send(html);
