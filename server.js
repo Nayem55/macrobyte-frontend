@@ -12,6 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'macrobyte-local-development-secret
 const publicPort = Number(process.env.PORT || 1016);
 const adminPort = Number(process.env.ADMIN_PORT || 1017);
 let client, db;
+const slugify = value => String(value || '').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 
 const defaults = {
   brand: 'MacroByte Trade',
@@ -92,7 +93,7 @@ const serviceCatalogue = [
 async function getDb() {
   if (db) return db;
   client = new MongoClient(MONGODB_URI); await client.connect(); db = client.db();
-  await Promise.all([db.collection('admins').createIndex({username:1},{unique:true}), db.collection('services').createIndex({order:1}), db.collection('products').createIndex({order:1})]);
+  await Promise.all([db.collection('admins').createIndex({username:1},{unique:true}), db.collection('services').createIndex({order:1}), db.collection('products').createIndex({order:1}), db.collection('categories').createIndex({slug:1},{unique:true}), db.collection('orders').createIndex({createdAt:-1})]);
   if (!await db.collection('settings').findOne({key:'site'})) await db.collection('settings').insertOne({key:'site', value:defaults});
   if (!await db.collection('services').countDocuments()) await db.collection('services').insertMany(defaultServices);
   if (!await db.collection('products').countDocuments()) await db.collection('products').insertMany(defaultProducts);
@@ -105,6 +106,12 @@ async function getDb() {
     await db.collection('products').insertMany(stockCatalogue);
     await db.collection('settings').insertOne({key:'stock-catalogue-v1',createdAt:new Date(),source:'MACRO BYTE STOCK (1).xlsx',records:stockCatalogue.length});
   }
+  if (!await db.collection('settings').findOne({key:'category-catalogue-v1'})) {
+    const categories = await db.collection('products').aggregate([{ $group:{_id:'$category',products:{$sum:1}} }]).toArray();
+    await db.collection('categories').deleteMany({});
+    if (categories.length) await db.collection('categories').insertMany(categories.sort((a,b)=>a._id.localeCompare(b._id)).map((category,index)=>({name:category._id,slug:slugify(category._id),description:`Browse ${category._id.toLowerCase()} from MacroByte Trade.`,order:index+1,active:true,createdAt:new Date()})));
+    await db.collection('settings').insertOne({key:'category-catalogue-v1',createdAt:new Date()});
+  }
   if (!await db.collection('admins').findOne({username:'admin'})) await db.collection('admins').insertOne({username:'admin', password:await bcrypt.hash('macrobyte2026', 12), createdAt:new Date()});
   return db;
 }
@@ -116,24 +123,38 @@ const api = express(); api.use(express.json({limit:'2mb'}));
 api.get('/api/health', async (_q,res)=>{ try { await getDb(); res.json({ok:true,database:'connected'}); } catch(e) { res.status(503).json({ok:false,message:e.message}); } });
 api.get('/api/site', async (_q,res)=> { const d=await getDb(); const s=await d.collection('settings').findOne({key:'site'}); res.json(s.value); });
 api.get('/api/services', async (_q,res)=> { const d=await getDb(); res.json((await d.collection('services').find({active:true}).sort({order:1}).toArray()).map(clean)); });
-api.get('/api/products', async (_q,res)=> { const d=await getDb(); res.json((await d.collection('products').find({active:true}).sort({order:1}).toArray()).map(clean)); });
+api.get('/api/categories', async (_q,res)=> { const d=await getDb(); res.json((await d.collection('categories').find({active:true}).sort({order:1,name:1}).toArray()).map(clean)); });
+api.get('/api/products', async (req,res)=> {
+  const d=await getDb(); const query={active:true};
+  if(req.query.category){const category=await d.collection('categories').findOne({slug:req.query.category,active:true});query.category=category?.name||req.query.category;}
+  if(req.query.q){const safe=String(req.query.q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');query.$or=['name','brand','model','keywords','category'].map(field=>({[field]:{$regex:safe,$options:'i'}}));}
+  if(req.query.paged==='1'){const limit=Math.min(Math.max(Number(req.query.limit)||12,1),48),page=Math.max(Number(req.query.page)||1,1),total=await d.collection('products').countDocuments(query),items=await d.collection('products').find(query).sort({order:1,name:1}).skip((page-1)*limit).limit(limit).toArray();return res.json({items:items.map(clean),total,page,limit,totalPages:Math.max(Math.ceil(total/limit),1)});}
+  res.json((await d.collection('products').find(query).sort({order:1,name:1}).toArray()).map(clean));
+});
 api.post('/api/enquiries', async (req,res)=> { const d=await getDb(); const {name,phone,email,type,subject,message}=req.body; if(!name||!message) return res.status(400).json({message:'Name and details are required.'}); await d.collection('enquiries').insertOne({name,phone,email,type,subject,message,status:'new',createdAt:new Date()}); res.status(201).json({ok:true}); });
 api.post('/api/auth/login', async (req,res)=> { const d=await getDb(); const user=await d.collection('admins').findOne({username:req.body.username}); if(!user || !await bcrypt.compare(req.body.password||'',user.password)) return res.status(401).json({message:'Invalid username or password.'}); res.json({token:jwt.sign({id:user._id.toString(),username:user.username},JWT_SECRET,{expiresIn:'12h'}),username:user.username}); });
-api.get('/api/admin/dashboard',auth,async(_q,res)=> { const d=await getDb(); res.json({services:await d.collection('services').countDocuments(),products:await d.collection('products').countDocuments(),enquiries:await d.collection('enquiries').countDocuments(),newEnquiries:await d.collection('enquiries').countDocuments({status:'new'})}); });
+api.get('/api/admin/dashboard',auth,async(_q,res)=> { const d=await getDb(); res.json({services:await d.collection('services').countDocuments(),products:await d.collection('products').countDocuments(),categories:await d.collection('categories').countDocuments(),orders:await d.collection('orders').countDocuments(),enquiries:await d.collection('enquiries').countDocuments(),newEnquiries:await d.collection('enquiries').countDocuments({status:'new'})}); });
 api.get('/api/admin/site',auth,async(_q,res)=> { const d=await getDb(); res.json((await d.collection('settings').findOne({key:'site'})).value); });
 api.put('/api/admin/site',auth,async(req,res)=> { const d=await getDb(); await d.collection('settings').updateOne({key:'site'},{$set:{value:req.body,updatedAt:new Date()}},{upsert:true}); res.json(req.body); });
 for (const name of ['services','products']) {
   api.get('/api/admin/'+name,auth,async(_q,res)=>{ const d=await getDb();res.json((await d.collection(name).find().sort({order:1}).toArray()).map(clean)); });
-  api.post('/api/admin/'+name,auth,async(req,res)=>{ const d=await getDb();const item={...req.body,active:req.body.active!==false,order:Number(req.body.order||0),createdAt:new Date()};const r=await d.collection(name).insertOne(item);res.status(201).json(clean({...item,_id:r.insertedId})); });
-  api.put('/api/admin/'+name+'/:id',auth,async(req,res)=>{ const d=await getDb();const update={...req.body,order:Number(req.body.order||0),updatedAt:new Date()};delete update.id;await d.collection(name).updateOne({_id:objectId(req.params.id)},{$set:update});res.json({ok:true}); });
+  api.post('/api/admin/'+name,auth,async(req,res)=>{ const d=await getDb();let item={...req.body,active:req.body.active!==false,order:Number(req.body.order||0),createdAt:new Date()};if(name==='products'){item={...item,slug:slugify(item.slug||`${item.brand||'macrobyte'}-${item.name||'product'}`),stockQty:Number(item.stockQty||0),stockStatus:Number(item.stockQty||0)>0?'In stock':'Stock confirmation required',keywords:[item.brand,item.name,item.model,item.category].filter(Boolean)}}const r=await d.collection(name).insertOne(item);res.status(201).json(clean({...item,_id:r.insertedId})); });
+  api.put('/api/admin/'+name+'/:id',auth,async(req,res)=>{ const d=await getDb();let update={...req.body,order:Number(req.body.order||0),updatedAt:new Date()};if(name==='products'){update={...update,slug:slugify(update.slug||`${update.brand||'macrobyte'}-${update.name||'product'}`),stockQty:Number(update.stockQty||0),stockStatus:Number(update.stockQty||0)>0?'In stock':'Stock confirmation required',keywords:[update.brand,update.name,update.model,update.category].filter(Boolean)}}delete update.id;await d.collection(name).updateOne({_id:objectId(req.params.id)},{$set:update});res.json({ok:true}); });
   api.delete('/api/admin/'+name+'/:id',auth,async(req,res)=>{ const d=await getDb();await d.collection(name).deleteOne({_id:objectId(req.params.id)});res.json({ok:true}); });
 }
+api.get('/api/admin/categories',auth,async(_q,res)=>{const d=await getDb();res.json((await d.collection('categories').find().sort({order:1,name:1}).toArray()).map(clean));});
+api.post('/api/admin/categories',auth,async(req,res)=>{const d=await getDb();const item={name:String(req.body.name||'').trim(),slug:slugify(req.body.slug||req.body.name),description:String(req.body.description||'').trim(),order:Number(req.body.order||0),active:req.body.active!==false,createdAt:new Date()};if(!item.name||!item.slug)return res.status(400).json({message:'Category name is required.'});const r=await d.collection('categories').insertOne(item);res.status(201).json(clean({...item,_id:r.insertedId}));});
+api.put('/api/admin/categories/:id',auth,async(req,res)=>{const d=await getDb();const item={name:String(req.body.name||'').trim(),slug:slugify(req.body.slug||req.body.name),description:String(req.body.description||'').trim(),order:Number(req.body.order||0),active:req.body.active!==false,updatedAt:new Date()};if(!item.name||!item.slug)return res.status(400).json({message:'Category name is required.'});await d.collection('categories').updateOne({_id:objectId(req.params.id)},{$set:item});res.json({ok:true});});
+api.delete('/api/admin/categories/:id',auth,async(req,res)=>{const d=await getDb();const category=await d.collection('categories').findOne({_id:objectId(req.params.id)});if(category&&await d.collection('products').countDocuments({category:category.name}))return res.status(409).json({message:'Move or update products in this category before deleting it.'});await d.collection('categories').deleteOne({_id:objectId(req.params.id)});res.json({ok:true});});
+api.post('/api/orders',async(req,res)=>{const d=await getDb();const customer=req.body.customer||{},items=Array.isArray(req.body.items)?req.body.items:[];if(!customer.name||!customer.phone||!items.length)return res.status(400).json({message:'Name, phone and at least one item are required.'});const order={customer:{name:String(customer.name).trim(),phone:String(customer.phone).trim(),address:String(customer.address||'').trim(),email:String(customer.email||'').trim()},items:items.map(item=>({productId:String(item.productId||''),name:String(item.name||''),price:String(item.price||''),quantity:Math.max(Number(item.quantity)||1,1)})),status:'new',notes:String(req.body.notes||'').trim(),createdAt:new Date()};const result=await d.collection('orders').insertOne(order);res.status(201).json({ok:true,orderId:result.insertedId.toString()});});
+api.get('/api/admin/orders',auth,async(_q,res)=>{const d=await getDb();res.json((await d.collection('orders').find().sort({createdAt:-1}).toArray()).map(clean));});
+api.patch('/api/admin/orders/:id',auth,async(req,res)=>{const allowed=['new','confirmed','processing','completed','cancelled'];if(!allowed.includes(req.body.status))return res.status(400).json({message:'Invalid order status.'});const d=await getDb();await d.collection('orders').updateOne({_id:objectId(req.params.id)},{$set:{status:req.body.status,updatedAt:new Date()}});res.json({ok:true});});
 api.get('/api/admin/enquiries',auth,async(_q,res)=>{ const d=await getDb();res.json((await d.collection('enquiries').find().sort({createdAt:-1}).toArray()).map(clean)); });
 api.patch('/api/admin/enquiries/:id',auth,async(req,res)=>{ const d=await getDb();await d.collection('enquiries').updateOne({_id:objectId(req.params.id)},{$set:{status:req.body.status}});res.json({ok:true}); });
 api.use((err,_q,res,_next)=>res.status(500).json({message:err.message||'Server error'}));
 
 const publicApp = express();
-const publicCss='<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/light.css"><link rel="stylesheet" href="/header-theme.css"><link rel="stylesheet" href="/contrast.css"><link rel="stylesheet" href="/gallery.css"><link rel="stylesheet" href="/site-polish.css"><script src="/media.js"></script>';
+const publicCss='<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/light.css"><link rel="stylesheet" href="/header-theme.css"><link rel="stylesheet" href="/contrast.css"><link rel="stylesheet" href="/gallery.css"><link rel="stylesheet" href="/site-polish.css"><link rel="stylesheet" href="/ecommerce.css"><link rel="stylesheet" href="/cart.css"><script src="/media.js"></script><script defer src="/cart.js"></script><script defer src="/site-header.js"></script>';
 const brandImage='<img src="/assets/macrobyte-logo.png" alt="MacroByte Trade">';
 const applyBrand=html=>html
   .replace(/(<img\b[^>]*\bsrc=")data:image\/[^"]+("(?=[^>]*\balt="MacroByte[^"]*"[^>]*>))/g,'$1/assets/macrobyte-logo.png$2')
@@ -160,6 +181,8 @@ publicApp.get('/service.html',sendPublicPage('service'));
 publicApp.get('/category.html',sendPublicPage('category'));
 publicApp.get('/services.html',sendPublicPage('services'));
 publicApp.get('/products.html',sendPublicPage('products'));
+publicApp.get('/shop.html',sendPublicPage('shop'));
+publicApp.get('/cart.html',sendPublicPage('cart'));
 publicApp.get('/about.html',sendPublicPage('about'));
 publicApp.get('/contact.html',sendPublicPage('contact'));
 publicApp.use(express.static(root));

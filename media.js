@@ -24,6 +24,7 @@ services:{
 'Creative & Business Support':['https://images.unsplash.com/photo-1545235617-9465d2a55698?auto=format&fit=crop&w=1400&q=85']
 },
 product(item){
+  if(Array.isArray(item.images)&&item.images.length)return item.images;
   if(this.products[item.slug])return this.products[item.slug];
   const related={
     'Computer Accessories':['https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=1400&q=85','https://images.unsplash.com/photo-1527814050087-3793815479db?auto=format&fit=crop&w=1400&q=85'],
