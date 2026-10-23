@@ -163,5 +163,5 @@ publicApp.get('/products.html',sendPublicPage('products'));
 publicApp.get('/about.html',sendPublicPage('about'));
 publicApp.get('/contact.html',sendPublicPage('contact'));
 publicApp.use(express.static(root));
-const adminApp = express(); adminApp.use(api); adminApp.use(express.static(path.join(root,'admin'))); adminApp.use((_q,res)=>res.sendFile(path.join(root,'admin','index.html')));
+const adminApp = express(); adminApp.use(api); adminApp.use('/assets',express.static(path.join(root,'assets'))); adminApp.use(express.static(path.join(root,'admin'))); adminApp.use((_q,res)=>res.sendFile(path.join(root,'admin','index.html')));
 Promise.all([getDb().catch(e=>console.error('MongoDB unavailable at startup:',e.message)), new Promise(r=>publicApp.listen(publicPort,'0.0.0.0',r)), new Promise(r=>adminApp.listen(adminPort,'0.0.0.0',r))]).then(()=>console.log(`Macrobyte public: http://localhost:${publicPort} | admin: http://localhost:${adminPort}`));
