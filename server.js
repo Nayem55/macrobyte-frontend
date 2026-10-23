@@ -179,16 +179,16 @@ api.patch('/api/admin/enquiries/:id',auth,async(req,res)=>{ const d=await getDb(
 api.use((err,_q,res,_next)=>res.status(500).json({message:err.message||'Server error'}));
 
 const publicApp = express();
-const publicCss='<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/light.css"><link rel="stylesheet" href="/header-theme.css"><link rel="stylesheet" href="/contrast.css"><link rel="stylesheet" href="/gallery.css"><link rel="stylesheet" href="/site-polish.css"><link rel="stylesheet" href="/ecommerce.css"><link rel="stylesheet" href="/cart.css"><link rel="stylesheet" href="/header-fix.css"><script src="/media.js"></script><script defer src="/cart.js"></script><script defer src="/site-header.js"></script>';
+const publicCss='<style>header:not(.mb-header),.topline{visibility:hidden}header:not(.mb-header){display:block;height:78px}</style><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/light.css"><link rel="stylesheet" href="/header-theme.css"><link rel="stylesheet" href="/contrast.css"><link rel="stylesheet" href="/gallery.css"><link rel="stylesheet" href="/site-polish.css"><link rel="stylesheet" href="/ecommerce.css"><link rel="stylesheet" href="/cart.css"><link rel="stylesheet" href="/header-fix.css"><script src="/media.js"></script><script defer src="/cart.js"></script><script defer src="/site-header.js"></script>';
 const brandImage='<img src="/assets/macrobyte-logo.png" alt="MacroByte Trade">';
 const applyBrand=html=>html
   .replace(/(<img\b[^>]*\bsrc=")data:image\/[^"]+("(?=[^>]*\balt="MacroByte[^"]*"[^>]*>))/g,'$1/assets/macrobyte-logo.png$2')
   .replace(/<span class="brandtext">[\s\S]*?<\/span>/g,'')
   .replace(/href="\/?#home"/g,'href="/"')
-  .replace(/href="\/?#services"/g,'href="/services.html"')
-  .replace(/href="\/?#products"/g,'href="/products.html"')
-  .replace(/href="\/?#about"/g,'href="/about.html"')
-  .replace(/href="\/?#contact"/g,'href="/contact.html"')
+  .replace(/href="\/?#services"/g,'href="/services"')
+  .replace(/href="\/?#products"/g,'href="/products"')
+  .replace(/href="\/?#about"/g,'href="/about"')
+  .replace(/href="\/?#contact"/g,'href="/contact"')
   .replace(/<a class="brand"[^>]*>[\s\S]*?<\/a>/g,`<a class="brand" href="/" aria-label="MacroByte Trade home">${brandImage}</a>`);
 const sendPublicPage = page => (_q,res) => {
   const html=applyBrand(fs.readFileSync(path.join(root,page+'.html'),'utf8')).replace('</head>',publicCss+'</head>');
@@ -207,15 +207,10 @@ publicApp.get('/',(_q,res)=>{
     .replace('</body>','<script src="/dynamic.js"></script></body>');
   res.type('html').send(html);
 });
-publicApp.get('/product.html',sendPublicPage('product'));
-publicApp.get('/service.html',sendPublicPage('service'));
-publicApp.get('/category.html',sendPublicPage('category'));
-publicApp.get('/services.html',sendPublicPage('services'));
-publicApp.get('/products.html',sendPublicPage('products'));
-publicApp.get('/shop.html',sendPublicPage('shop'));
-publicApp.get('/cart.html',sendPublicPage('cart'));
-publicApp.get('/about.html',sendPublicPage('about'));
-publicApp.get('/contact.html',sendPublicPage('contact'));
+for(const page of ['product','service','category','services','products','shop','cart','about','contact']){
+  publicApp.get('/'+page,sendPublicPage(page));
+  publicApp.get('/'+page+'.html',(req,res)=>res.redirect(301,'/'+page+(req.url.includes('?')?req.url.slice(req.url.indexOf('?')):'')));
+}
 publicApp.use('/admin',express.static(path.join(root,'admin')));
 publicApp.use(express.static(root));
 Promise.all([getDb().catch(e=>console.error('MongoDB unavailable at startup:',e.message)), new Promise(r=>publicApp.listen(publicPort,'0.0.0.0',r)), new Promise(r=>api.listen(adminPort,'0.0.0.0',r))]).then(()=>console.log(`Macrobyte frontend: http://localhost:${publicPort} | admin: http://localhost:${publicPort}/admin/ | backend API: http://localhost:${adminPort}`));

@@ -12,6 +12,6 @@ const esc=value=>String(value||'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&
     <div class="catalog-grid">${products.map(product=>`<article class="catalog-card">
       <img src="${imageFor(product)}" alt="${esc(product.name)}" loading="lazy">
       <div><span class="eyebrow">${esc(product.subCategory||product.category)}</span><h3>${esc(product.name)}</h3>
-      <p>${esc(product.description)}</p><a href="/product.html?id=${product.id}">View product</a></div>
+      <p>${esc(product.description)}</p><a href="/product?id=${product.id}">View product</a></div>
     </article>`).join('')||'<p>No products have been added to this category yet.</p>'}</div>`;
 })().catch(()=>document.querySelector('#app').innerHTML='<h1>Unable to load this category.</h1>');
