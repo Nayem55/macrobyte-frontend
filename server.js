@@ -128,15 +128,19 @@ api.use((err,_q,res,_next)=>res.status(500).json({message:err.message||'Server e
 
 const publicApp = express();
 const publicCss='<link rel="stylesheet" href="/light.css"><link rel="stylesheet" href="/header-theme.css"><link rel="stylesheet" href="/contrast.css"><link rel="stylesheet" href="/gallery.css"><link rel="stylesheet" href="/site-polish.css"><script src="/media.js"></script>';
+const brandImage='<img src="/assets/macrobyte-logo.png" alt="MacroByte Trade">';
+const applyBrand=html=>html
+  .replace(/(<img\b[^>]*\bsrc=")data:image\/[^"]+("(?=[^>]*\balt="MacroByte[^"]*"[^>]*>))/g,'$1/assets/macrobyte-logo.png$2')
+  .replace(/<a class="brand" href="\/">[\s\S]*?<\/a>/g,`<a class="brand" href="/" aria-label="MacroByte Trade home">${brandImage}</a>`);
 const sendPublicPage = page => (_q,res) => {
-  const html=fs.readFileSync(path.join(root,page+'.html'),'utf8').replace('</head>',publicCss+'</head>').replace('</body>','<script src="/brand.js"></script></body>');
+  const html=applyBrand(fs.readFileSync(path.join(root,page+'.html'),'utf8')).replace('</head>',publicCss+'</head>');
   res.type('html').send(html);
 };
 publicApp.use(api);
 publicApp.get('/',(_q,res)=>{
-  const html=fs.readFileSync(path.join(root,'macrobyte-trade-website.html'),'utf8')
+  const html=applyBrand(fs.readFileSync(path.join(root,'macrobyte-trade-website.html'),'utf8'))
     .replace('</head>',publicCss+'</head>')
-    .replace('</body>','<script src="/brand.js"></script><script src="/dynamic.js"></script></body>');
+    .replace('</body>','<script src="/dynamic.js"></script></body>');
   res.type('html').send(html);
 });
 publicApp.get('/product.html',sendPublicPage('product'));
