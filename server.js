@@ -1,4 +1,5 @@
 const express = require('express');
+const http = require('http');
 const path = require('path');
 const fs = require('fs');
 const { MongoClient, ObjectId } = require('mongodb');
@@ -169,7 +170,13 @@ const sendPublicPage = page => (_q,res) => {
   const html=applyBrand(fs.readFileSync(path.join(root,page+'.html'),'utf8')).replace('</head>',publicCss+'</head>');
   res.type('html').send(html);
 };
-publicApp.use(api);
+// The browser app stays on 1016; its /api calls are forwarded to the backend on 1017.
+publicApp.use((req,res,next)=>{
+  if(!req.path.startsWith('/api/')) return next();
+  const proxy=http.request({hostname:'127.0.0.1',port:adminPort,path:req.originalUrl,method:req.method,headers:{...req.headers,host:`127.0.0.1:${adminPort}`}},backendResponse=>{res.writeHead(backendResponse.statusCode||502,backendResponse.headers);backendResponse.pipe(res)});
+  proxy.on('error',()=>res.status(502).json({message:'Backend service is unavailable.'}));
+  req.pipe(proxy);
+});
 publicApp.get('/',(_q,res)=>{
   const html=applyBrand(fs.readFileSync(path.join(root,'macrobyte-trade-website.html'),'utf8'))
     .replace('</head>',publicCss+'</head>')
@@ -185,6 +192,6 @@ publicApp.get('/shop.html',sendPublicPage('shop'));
 publicApp.get('/cart.html',sendPublicPage('cart'));
 publicApp.get('/about.html',sendPublicPage('about'));
 publicApp.get('/contact.html',sendPublicPage('contact'));
+publicApp.use('/admin',express.static(path.join(root,'admin')));
 publicApp.use(express.static(root));
-const adminApp = express(); adminApp.use(api); adminApp.use('/assets',express.static(path.join(root,'assets'))); adminApp.use(express.static(path.join(root,'admin'))); adminApp.use((_q,res)=>res.sendFile(path.join(root,'admin','index.html')));
-Promise.all([getDb().catch(e=>console.error('MongoDB unavailable at startup:',e.message)), new Promise(r=>publicApp.listen(publicPort,'0.0.0.0',r)), new Promise(r=>adminApp.listen(adminPort,'0.0.0.0',r))]).then(()=>console.log(`Macrobyte public: http://localhost:${publicPort} | admin: http://localhost:${adminPort}`));
+Promise.all([getDb().catch(e=>console.error('MongoDB unavailable at startup:',e.message)), new Promise(r=>publicApp.listen(publicPort,'0.0.0.0',r)), new Promise(r=>api.listen(adminPort,'0.0.0.0',r))]).then(()=>console.log(`Macrobyte frontend: http://localhost:${publicPort} | admin: http://localhost:${publicPort}/admin/ | backend API: http://localhost:${adminPort}`));
