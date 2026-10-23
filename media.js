@@ -23,6 +23,18 @@ services:{
 'Office Setup & Installation':['https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=85','https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=85'],
 'Creative & Business Support':['https://images.unsplash.com/photo-1545235617-9465d2a55698?auto=format&fit=crop&w=1400&q=85']
 },
-product(item){return this.products[item.slug]||['https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=85'];},
+product(item){
+  if(this.products[item.slug])return this.products[item.slug];
+  const related={
+    'Computer Accessories':['https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=1400&q=85','https://images.unsplash.com/photo-1527814050087-3793815479db?auto=format&fit=crop&w=1400&q=85'],
+    'Networking & Connectivity':['https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=85','https://images.unsplash.com/photo-1600267165477-6d4cc741b379?auto=format&fit=crop&w=1400&q=85'],
+    'CCTV & Smart Security':['https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=1400&q=85','https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1400&q=85'],
+    'Audio & Wearables':['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1400&q=85','https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=1400&q=85'],
+    'Power & Charging':['https://images.unsplash.com/photo-1558091879-7f36736b0e3a?auto=format&fit=crop&w=1400&q=85','https://images.unsplash.com/photo-1609592424824-5027c3f7a8dd?auto=format&fit=crop&w=1400&q=85'],
+    'Mobile Content Creation':['https://images.unsplash.com/photo-1598550476439-6847785fcea4?auto=format&fit=crop&w=1400&q=85','https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=1400&q=85'],
+    'Personal & Lifestyle Electronics':['https://images.unsplash.com/photo-1618044733300-9472054094ee?auto=format&fit=crop&w=1400&q=85','https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=1400&q=85']
+  };
+  return related[item.category]||['https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=85'];
+},
 service(item){return this.services[item.title]||['https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=85'];}
 };

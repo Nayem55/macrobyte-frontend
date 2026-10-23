@@ -4,6 +4,7 @@ const fs = require('fs');
 const { MongoClient, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const stockCatalogue = require('./stock-catalogue');
 
 const root = __dirname;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/macro-byte';
@@ -99,6 +100,11 @@ async function getDb() {
   if (!await db.collection('settings').findOne({key:'service-detail-seed-v1'})) { for (const service of serviceDetails) await db.collection('services').updateOne({title:service.title},{$set:service}); await db.collection('settings').insertOne({key:'service-detail-seed-v1',createdAt:new Date()}); }
   if (!await db.collection('settings').findOne({key:'service-detail-seed-v2'})) { const office=serviceDetails.find(s=>s.title==='Office Setup & Installation'); await db.collection('services').updateOne({title:'Installation & Setup'},{$set:office}); await db.collection('settings').insertOne({key:'service-detail-seed-v2',createdAt:new Date()}); }
   if (!await db.collection('settings').findOne({key:'service-catalogue-v3'})) { await db.collection('services').deleteMany({}); await db.collection('services').insertMany(serviceCatalogue); await db.collection('settings').insertOne({key:'service-catalogue-v3',createdAt:new Date()}); }
+  if (!await db.collection('settings').findOne({key:'stock-catalogue-v1'})) {
+    await db.collection('products').deleteMany({});
+    await db.collection('products').insertMany(stockCatalogue);
+    await db.collection('settings').insertOne({key:'stock-catalogue-v1',createdAt:new Date(),source:'MACRO BYTE STOCK (1).xlsx',records:stockCatalogue.length});
+  }
   if (!await db.collection('admins').findOne({username:'admin'})) await db.collection('admins').insertOne({username:'admin', password:await bcrypt.hash('macrobyte2026', 12), createdAt:new Date()});
   return db;
 }
