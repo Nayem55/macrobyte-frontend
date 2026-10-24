@@ -862,10 +862,10 @@ textarea {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(430px, 1.08fr);
   gap: 44px;
-  overflow: hidden;
-  border: 1px solid #e1e8f3;
-  border-radius: 26px;
-  background: linear-gradient(115deg, #fff 0%, #f8fbff 52%, #edf5ff 100%);
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
 }
 .hero-copy {
@@ -952,6 +952,10 @@ textarea {
   background:
     radial-gradient(circle at 50% 43%, #fff 0 19%, transparent 20%),
     linear-gradient(145deg, #eaf4ff, #f9fcff 53%, #e8f1ff);
+  box-shadow:
+    18px 24px 42px rgba(48, 93, 160, 0.14),
+    -8px -8px 24px rgba(255, 255, 255, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 .hero-logo-plate {
   position: relative;
@@ -964,7 +968,9 @@ textarea {
   border: 1px solid rgba(216, 229, 247, 0.9);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.88);
-  box-shadow: none;
+  box-shadow:
+    0 18px 34px rgba(48, 93, 160, 0.16),
+    inset 0 1px 0 #fff;
 }
 .hero-logo-plate img {
   width: 100%;
@@ -998,7 +1004,9 @@ textarea {
   border: 1px solid rgba(220, 229, 243, 0.95);
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.92);
-  box-shadow: none;
+  box-shadow:
+    0 13px 25px rgba(42, 77, 133, 0.14),
+    inset 0 1px 0 #fff;
   color: #17275c;
   font-size: 0.78rem;
   font-weight: 800;
