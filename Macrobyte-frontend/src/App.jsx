@@ -307,11 +307,33 @@ function Home() {
             </Link>
           </div>
         </div>
-        <aside className="hero-visual">
-          <img
-            src="/assets/macrobyte-hero-tech.png"
-            alt="Technology products for home and business"
-          />
+        <aside className="hero-visual" aria-label="MacroByte Trade solutions">
+          <div className="hero-orbit hero-orbit-one" />
+          <div className="hero-orbit hero-orbit-two" />
+          <div className="hero-logo-plate">
+            <img
+              src={site?.logoUrl || "/assets/macrobyte-logo.png"}
+              alt={site?.brand || "MacroByte Trade"}
+            />
+          </div>
+          <div className="hero-float hero-float-top">
+            <i>⚙</i>
+            <span>
+              Smart IT<small>Solutions</small>
+            </span>
+          </div>
+          <div className="hero-float hero-float-right">
+            <i>▣</i>
+            <span>
+              Business<small>Supplies</small>
+            </span>
+          </div>
+          <div className="hero-float hero-float-bottom">
+            <i>◌</i>
+            <span>
+              Creative &<small>Digital services</small>
+            </span>
+          </div>
         </aside>
         <div className="hero-benefits">
           <span>
