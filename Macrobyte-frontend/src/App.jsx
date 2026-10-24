@@ -78,7 +78,7 @@ function Header() {
     <header className={`mb-header${open ? " open" : ""}`}>
       <div className="mb-header-inner">
         <Link className="mb-brand" to="/" onClick={close}>
-          <img src="/assets/macrobyte-logo.png" alt="MacroByte Trade" />
+          <img src="/assets/macrobyte-logo.png" alt="MacroByte Trade" width="148" height="52" />
         </Link>
         <nav className="mb-nav" aria-label="Main navigation">
           <Link to="/services" onClick={close}>
@@ -138,7 +138,8 @@ function Header() {
             <input
               name="q"
               aria-label="Search products"
-              placeholder="Search products..."
+              placeholder="Search products…"
+              autoComplete="off"
             />
           </form>
           <Link
@@ -184,6 +185,8 @@ function Footer() {
             src="/assets/macrobyte-logo.png"
             alt="MacroByte Trade"
             className="footer-logo"
+            width="148"
+            height="52"
           />
           <p>
             Technology, practical services, and dependable business supply in
@@ -258,7 +261,7 @@ function ProductCard({ product, add }) {
           aria-label={`View ${product.name}`}
           to={productPath(product)}
         >
-          <img src={productImage} alt={product.name} />
+          <img src={productImage} alt={product.name} width="720" height="540" loading="lazy" />
         </Link>
       ) : (
         <Link
@@ -266,7 +269,7 @@ function ProductCard({ product, add }) {
           aria-label={`View ${product.name}`}
           to={productPath(product)}
         >
-          <img src="/assets/macrobyte-logo.png" alt="" />
+          <img src="/assets/macrobyte-logo.png" alt="" width="220" height="90" />
           <span>Image coming soon</span>
         </Link>
       )}
@@ -314,274 +317,152 @@ function useCatalogue() {
 
 function Home() {
   const { site, products, categories, services, error } = useCatalogue();
+  const visualItems = [
+    ...categories,
+    ...products.filter((product) => product.images?.[0] || product.imageUrl),
+  ];
+  const sheetItems = Array.from(
+    { length: Math.min(Math.max(visualItems.length, 8), 18) },
+    (_, index) => visualItems[index % visualItems.length],
+  ).filter(Boolean);
+  const featuredProducts = products.slice(0, 7);
   return (
     <>
-      <section className="home-hero">
-        <div className="hero-copy">
-          <span className="hero-eyebrow">
-            {site?.hero?.eyebrow || "MacroByte Trade"}
-          </span>
-          <h1>
-            {site?.hero?.title || "Technology that works for your world."}
-          </h1>
-          <p>
-            {site?.hero?.description ||
-              "Technology, services, and business supply in one place."}
-          </p>
-          <div className="hero-actions">
-            <Link className="button" to="/shop">
-              Explore products <span>→</span>
+      <section className="catalogue-hero">
+        <div className="catalogue-sheet" aria-label="MacroByte catalogue preview">
+          {sheetItems.map((item, index) => (
+            <Link
+              className={`catalogue-tile catalogue-tile-${(index % 6) + 1}`}
+              key={`${item.id || item.slug}-${index}`}
+              to={item.slug ? productPath(item) : `/shop?category=${encodeURIComponent(item.slug || item.name)}`}
+              aria-label={`Explore ${item.name}`}
+            >
+              <img
+                src={imageFor(item)}
+                alt={item.name || "MacroByte catalogue item"}
+                width="640"
+                height="480"
+                loading={index > 3 ? "lazy" : undefined}
+                fetchPriority={index < 2 ? "high" : undefined}
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = "/assets/macrobyte-logo.png";
+                }}
+              />
             </Link>
-            <Link className="hero-story" to="/about">
-              <i>▶</i> Watch our story
-            </Link>
-          </div>
-        </div>
-        <aside className="hero-visual" aria-label="MacroByte Trade solutions">
-          <div className="hero-orbit hero-orbit-one" />
-          <div className="hero-orbit hero-orbit-two" />
-          <div className="hero-logo-plate">
+          ))}
+          <div className="catalogue-intro">
             <img
               src={site?.logoUrl || "/assets/macrobyte-logo.png"}
               alt={site?.brand || "MacroByte Trade"}
+              width="220"
+              height="90"
+              fetchPriority="high"
             />
-          </div>
-          <div className="hero-float hero-float-top">
-            <i>⚙</i>
-            <span>
-              Smart IT<small>Solutions</small>
-            </span>
-          </div>
-          <div className="hero-float hero-float-right">
-            <i>▣</i>
-            <span>
-              Business<small>Supplies</small>
-            </span>
-          </div>
-          <div className="hero-float hero-float-bottom">
-            <i>◌</i>
-            <span>
-              Creative &<small>Digital services</small>
-            </span>
-          </div>
-        </aside>
-        <div className="hero-benefits">
-          <span>
-            ▣
-            <b>
-              Wide Product Range<small>For Home & Business</small>
-            </b>
-          </span>
-          <span>
-            ⚙
-            <b>
-              Expert Support<small>Reliable & Responsive</small>
-            </b>
-          </span>
-          <span>
-            ◈
-            <b>
-              Trusted Partner<small>Quality & Genuine Products</small>
-            </b>
-          </span>
-          <span>
-            ▣
-            <b>
-              Fast Nationwide Delivery<small>Across Bangladesh</small>
-            </b>
-          </span>
-        </div>
-      </section>
-      <section className="tech-pulse" aria-label="MacroByte catalogue overview">
-        <div className="tech-pulse-copy">
-          <span className="eyebrow">MacroByte signal</span>
-          <h2>Technology sourcing, support and services—working as one.</h2>
-          <p>
-            Explore a practical catalogue built around the equipment, setup and
-            day-to-day support modern work demands.
-          </p>
-          <Link to="/contact">Plan a requirement with us <span>→</span></Link>
-        </div>
-        <div className="tech-stats">
-          <article>
-            <strong>{products.length || "—"}</strong>
-            <span>Products to explore</span>
-          </article>
-          <article>
-            <strong>{categories.length || "—"}</strong>
-            <span>Technology categories</span>
-          </article>
-          <article>
-            <strong>{services.length || "—"}</strong>
-            <span>Service capabilities</span>
-          </article>
-        </div>
-      </section>
-      <section className="section">
-        <div className="section-title">
-          <div>
-            <span className="eyebrow">What we do</span>
-            <h2>Solutions for every part of your work.</h2>
-          </div>
-          <Link to="/services">All services →</Link>
-        </div>
-        <div className="cards service-cards">
-          {services.slice(0, 6).map((service) => (
-            <article className="service-card" key={service.id}>
-              <h3>{service.name || service.title}</h3>
-              <p>{service.description}</p>
-              <Link to="/services">Learn more →</Link>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="section">
-        <div className="section-title">
-          <div>
-            <span className="eyebrow">Products & supplies</span>
-            <h2>Browse products by category.</h2>
-          </div>
-          <Link to="/shop">View the shop →</Link>
-        </div>
-        {error && <p className="error">{error}</p>}
-        <div className="cards">
-          {categories.map((category) => (
-            <article className="category-card" key={category.id}>
-              <img src={imageFor(category)} alt={category.name} />
-              <div>
-                <h3>{category.name}</h3>
-                <p>
-                  {
-                    products.filter(
-                      (product) => product.category === category.name,
-                    ).length
-                  }{" "}
-                  stocked products available
-                </p>
-                <Link
-                  to={`/shop?category=${encodeURIComponent(category.slug)}`}
-                >
-                  Explore {category.name} →
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="solution-matrix">
-        <div className="solution-matrix-intro">
-          <span className="eyebrow">Built for real work</span>
-          <h2>A clearer path from idea to a working setup.</h2>
-          <p>
-            Whether you are upgrading one desk or planning for an entire team,
-            we help bring the right pieces together.
-          </p>
-          <Link to="/contact">Start a conversation →</Link>
-        </div>
-        <div className="solution-matrix-grid">
-          <article>
-            <span>01</span>
-            <h3>Equip</h3>
-            <p>Practical technology and supplies for workspaces and everyday use.</p>
-          </article>
-          <article>
-            <span>02</span>
-            <h3>Connect</h3>
-            <p>Accessories and infrastructure choices that fit together properly.</p>
-          </article>
-          <article>
-            <span>03</span>
-            <h3>Support</h3>
-            <p>Clear guidance when you need to compare, source or move forward.</p>
-          </article>
-        </div>
-      </section>
-      <section className="section how-it-works">
-        <div className="section-title">
-          <div>
-            <span className="eyebrow">Straightforward support</span>
-            <h2>From requirement to the right solution.</h2>
-          </div>
-          <Link to="/contact">Talk to our team →</Link>
-        </div>
-        <div className="process-grid">
-          <article>
-            <span>01</span>
-            <h3>Tell us what you need</h3>
+            <h1>Technology works.</h1>
             <p>
-              Share the product, service, office setup, or supply requirement
-              you are planning.
+              {site?.hero?.description ||
+                "Technology, practical support and business supply for homes, shops and growing teams."}
             </p>
-          </article>
-          <article>
-            <span>02</span>
-            <h3>Get practical guidance</h3>
-            <p>
-              We help compare options, confirm compatibility, availability, and
-              the next best step.
-            </p>
-          </article>
-          <article>
-            <span>03</span>
-            <h3>Move forward with confidence</h3>
-            <p>
-              Receive a clear quotation, delivery plan, or service arrangement
-              suited to your requirements.
-            </p>
-          </article>
-        </div>
-      </section>
-      <section className="section featured-products">
-        <div className="section-title">
-          <div>
-            <span className="eyebrow">Selected from the catalogue</span>
-            <h2>Popular essentials, ready to explore.</h2>
+            <Link className="catalogue-primary-action" to="/shop">
+              Explore products
+            </Link>
+            <div className="catalogue-intro-links">
+              <Link to="/services">Services</Link>
+              <Link to="/products">Categories</Link>
+              <Link to="/contact">Get support</Link>
+            </div>
           </div>
-          <Link to="/shop">See all products →</Link>
         </div>
-        <div className="cards featured-product-grid">
-          {products.slice(0, 4).map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <div className="catalogue-hero-meta">
+          <p>Browse actual products, compare options and send a focused requirement.</p>
+          <dl>
+            <div>
+              <dt>{products.length || "—"}</dt>
+              <dd>Products</dd>
+            </div>
+            <div>
+              <dt>{categories.length || "—"}</dt>
+              <dd>Categories</dd>
+            </div>
+            <div>
+              <dt>{services.length || "—"}</dt>
+              <dd>Services</dd>
+            </div>
+          </dl>
         </div>
       </section>
-      <section className="category-network">
-        <div>
-          <span className="eyebrow">Technology network</span>
-          <h2>Find the right starting point.</h2>
-          <p>
-            Browse organised product areas, then move from discovery to a
-            focused enquiry whenever you need guidance.
-          </p>
+
+      <section className="home-product-run" aria-labelledby="product-run-title">
+        <div className="home-section-intro">
+          <h2 id="product-run-title">Browse products.</h2>
+          <p>Start with what you need now, then move into the detail when you are ready.</p>
+          <Link to="/shop">Browse every product</Link>
         </div>
-        <div className="network-links">
-          {categories.slice(0, 8).map((category, index) => (
+        {error && <p className="error" role="status">{error}</p>}
+        <div className="product-frame-run">
+          {featuredProducts.map((product, index) => (
             <Link
-              key={category.id}
-              to={`/shop?category=${encodeURIComponent(category.slug)}`}
+              className={`product-frame ${index === 2 ? "product-frame-lifted" : ""}`}
+              key={product.id}
+              to={productPath(product)}
             >
-              <span>0{index + 1}</span>
-              {category.name}
-              <b>↗</b>
+              <img src={imageFor(product)} alt={product.name} width="720" height="540" loading="lazy" onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = "/assets/macrobyte-logo.png";
+              }} />
+              <span>{product.name}</span>
+              <strong>{price(product.price)}</strong>
             </Link>
           ))}
         </div>
       </section>
-      <section className="business-callout">
+
+      <section className="home-services-index" aria-labelledby="services-index-title">
+        <div className="home-section-intro">
+          <h2 id="services-index-title">Services for the work around the product.</h2>
+          <p>Bring the equipment, setup and support conversation into one place.</p>
+        </div>
+        <div className="services-index-groups">
+          {services.slice(0, 6).map((service) => (
+            <article key={service.id}>
+              <h3>{service.name || service.title}</h3>
+              <p>{service.description}</p>
+              <Link to="/services">See service details</Link>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="home-category-index" aria-labelledby="category-index-title">
+        <div className="home-category-copy">
+          <h2 id="category-index-title">Find your starting point.</h2>
+          <p>Choose a category to keep the search focused, or open the full shop when you know exactly what you need.</p>
+          <Link to="/shop">Open the full shop</Link>
+        </div>
+        <div className="category-list">
+          {categories.map((category) => {
+            const count = products.filter((product) => product.category === category.name).length;
+            return (
+              <Link key={category.id} to={`/shop?category=${encodeURIComponent(category.slug)}`}>
+                <img src={imageFor(category)} alt="" width="96" height="72" loading="lazy" onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = "/assets/macrobyte-logo.png";
+                }} />
+                <span>{category.name}</span>
+                <small>{count} products</small>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="home-enquiry" aria-labelledby="enquiry-title">
         <div>
-          <span className="eyebrow">For offices, shops and growing teams</span>
-          <h2>One partner for technology, services and business supply.</h2>
-          <p>
-            From a single accessory to a complete workplace requirement,
-            MacroByte Trade makes sourcing and support easier.
-          </p>
+          <h2 id="enquiry-title">Have a specific requirement?</h2>
+          <p>Tell MacroByte what you are sourcing and receive practical guidance for the next step.</p>
         </div>
-        <div className="business-callout-actions">
-          <Link className="button" to="/contact">
-            Request a business quote →
-          </Link>
-          <Link to="/services">Explore our services</Link>
-        </div>
+        <Link className="catalogue-primary-action" to="/contact">Request a quote</Link>
       </section>
     </>
   );
@@ -646,8 +527,9 @@ function Shop() {
         <input
           value={query}
           onChange={(event) => update("q", event.target.value)}
-          placeholder="Search brand, model or product"
+          placeholder="Search brand, model or product…"
           aria-label="Search catalogue"
+          autoComplete="off"
         />
         <select
           value={category}
@@ -990,20 +872,20 @@ function Contact() {
         details to understand what you need.
       </p>
       {sent && (
-        <p className="success">Thank you. Your enquiry has been sent.</p>
+        <p className="success" role="status">Thank you. Your enquiry has been sent.</p>
       )}
-      {error && <p className="error">{error}</p>}
+      {error && <p className="error" role="alert">{error}</p>}
       <form className="contact-form" onSubmit={submit}>
         <label>
-          Your name *<input name="name" required />
+          Your name *<input name="name" autoComplete="name" required />
         </label>
         <label>
           Phone
-          <input name="phone" />
+          <input name="phone" type="tel" inputMode="tel" autoComplete="tel" />
         </label>
         <label>
           Email
-          <input type="email" name="email" />
+          <input type="email" name="email" autoComplete="email" spellCheck={false} />
         </label>
         <label>
           Subject
@@ -1142,8 +1024,9 @@ export default function App() {
   return (
     <>
       <ScrollToRouteTop />
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <Header />
-      <main className="app-main">
+      <main className="app-main" id="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
