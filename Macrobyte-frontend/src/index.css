@@ -387,7 +387,7 @@ select:focus-visible {
 .product-frame strong {
   display: block;
   margin-top: 0.55rem;
-  color: var(--mb-accent);
+  color: #ab351f;
   font-size: 0.88rem;
   font-variant-numeric: tabular-nums;
 }
