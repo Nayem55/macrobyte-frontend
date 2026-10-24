@@ -564,8 +564,10 @@ select:focus-visible {
 
 @media (max-width: 900px) {
   .catalogue-sheet {
-    min-height: 630px;
+    height: 650px;
+    min-height: 0;
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: 106px;
   }
 
   .catalogue-intro {
