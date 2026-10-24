@@ -105,6 +105,10 @@ textarea {
   background: transparent;
   cursor: pointer;
 }
+.mb-category-label {
+  margin: 0 !important;
+  font: inherit !important;
+}
 .mb-chevron {
   width: 12px;
   height: 8px;
