@@ -544,8 +544,8 @@ textarea {
 .product-placeholder {
   display: grid;
   place-items: center;
-  height: 205px;
-  padding: 12px;
+  height: 240px;
+  padding: 10px;
   overflow: hidden;
   border-bottom: 1px solid #e3e9f4;
   background: linear-gradient(145deg, #eef3fb, #f9fbff);
@@ -581,6 +581,13 @@ textarea {
 }
 .product-card-body .eyebrow {
   margin: 0 0 10px;
+}
+.product-card-body h2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  font-size: 0.96rem;
 }
 .product-card strong {
   display: block;
