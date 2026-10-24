@@ -122,6 +122,26 @@ async function getDb() {
     if (categories.length) await db.collection('categories').insertMany(categories.sort((a,b)=>a._id.localeCompare(b._id)).map((category,index)=>({name:category._id,slug:slugify(category._id),description:`Browse ${category._id.toLowerCase()} from MacroByte Trade.`,order:index+1,active:true,createdAt:new Date()})));
     await db.collection('settings').insertOne({key:'category-catalogue-v1',createdAt:new Date()});
   }
+  if (!await db.collection('settings').findOne({key:'brand-catalogue-v1'})) {
+    const productBrands = await db.collection('products').aggregate([
+      {$match:{brand:{$type:'string',$ne:''}}},
+      {$group:{_id:'$brand'}}
+    ]).toArray();
+    const now = new Date();
+    for (const [index, record] of productBrands
+      .map(record=>String(record._id||'').trim())
+      .filter(Boolean)
+      .sort((a,b)=>a.localeCompare(b))
+      .entries()) {
+      const slug = slugify(record);
+      await db.collection('brands').updateOne(
+        {slug},
+        {$setOnInsert:{name:record,slug,logoUrl:'',description:'',active:true,order:index+1,createdAt:now}},
+        {upsert:true}
+      );
+    }
+    await db.collection('settings').insertOne({key:'brand-catalogue-v1',createdAt:now,records:productBrands.length});
+  }
   if (!await db.collection('admins').findOne({username:'admin'})) await db.collection('admins').insertOne({username:'admin', password:await bcrypt.hash('macrobyte2026', 12), createdAt:new Date()});
   return db;
 }
