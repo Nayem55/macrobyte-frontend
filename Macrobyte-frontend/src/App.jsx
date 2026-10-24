@@ -3,6 +3,7 @@ import {
   Navigate,
   Route,
   Routes,
+  useNavigate,
   useParams,
   useSearchParams,
 } from "react-router-dom";
@@ -31,6 +32,7 @@ const writeCart = (items) => {
 };
 
 function Header() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -63,6 +65,13 @@ function Header() {
   const close = () => {
     setOpen(false);
     setCategoryOpen(false);
+  };
+  const search = (event) => {
+    event.preventDefault();
+    const query = new FormData(event.currentTarget).get("q")?.trim();
+    navigate(query ? `/shop?q=${encodeURIComponent(query)}` : "/shop");
+    event.currentTarget.reset();
+    close();
   };
   return (
     <header className={`mb-header${open ? " open" : ""}`}>
@@ -123,6 +132,17 @@ function Header() {
           </Link>
         </nav>
         <div className="mb-actions">
+          <form className="header-search" onSubmit={search}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6" />
+              <path d="m16 16 4 4" />
+            </svg>
+            <input
+              name="q"
+              aria-label="Search products"
+              placeholder="Search products..."
+            />
+          </form>
           <Link
             className="mb-cart"
             to="/cart"
@@ -270,8 +290,8 @@ function Home() {
   return (
     <>
       <section className="home-hero">
-        <div>
-          <span className="eyebrow">
+        <div className="hero-copy">
+          <span className="hero-eyebrow">
             {site?.hero?.eyebrow || "MacroByte Trade"}
           </span>
           <h1>
@@ -281,16 +301,47 @@ function Home() {
             {site?.hero?.description ||
               "Technology, services, and business supply in one place."}
           </p>
-          <Link className="button" to="/shop">
-            Explore products
-          </Link>
+          <div className="hero-actions">
+            <Link className="button" to="/shop">
+              Explore products <span>→</span>
+            </Link>
+            <Link className="hero-story" to="/about">
+              <i>▶</i> Watch our story
+            </Link>
+          </div>
         </div>
-        <aside className="hero-card">
+        <aside className="hero-visual">
           <img
-            src={site?.logoUrl || "/assets/macrobyte-logo.png"}
-            alt={site?.brand || "MacroByte Trade"}
+            src="/assets/macrobyte-hero-tech.png"
+            alt="Technology products for home and business"
           />
         </aside>
+        <div className="hero-benefits">
+          <span>
+            ▣
+            <b>
+              Wide Product Range<small>For Home & Business</small>
+            </b>
+          </span>
+          <span>
+            ⚙
+            <b>
+              Expert Support<small>Reliable & Responsive</small>
+            </b>
+          </span>
+          <span>
+            ◈
+            <b>
+              Trusted Partner<small>Quality & Genuine Products</small>
+            </b>
+          </span>
+          <span>
+            ▣
+            <b>
+              Fast Nationwide Delivery<small>Across Bangladesh</small>
+            </b>
+          </span>
+        </div>
       </section>
       <section className="section">
         <div className="section-title">
@@ -779,6 +830,14 @@ function Contact() {
 }
 function Cart() {
   const [items, setItems] = useState(readCart);
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const total = items.reduce(
+    (sum, item) =>
+      sum +
+      (Number(String(item.price || "").replace(/[^0-9.]/g, "")) || 0) *
+        item.quantity,
+    0,
+  );
   const change = (id, quantity) => {
     const next =
       quantity < 1
@@ -788,38 +847,88 @@ function Cart() {
     writeCart(next);
   };
   return (
-    <main className="page">
+    <main className="page cart-page">
       <span className="eyebrow">Your selection</span>
       <h1>Your cart</h1>
       {!items.length ? (
-        <p>
-          Your cart is empty. <Link to="/shop">Browse products</Link>
-        </p>
+        <div className="empty-cart">
+          <h2>Your cart is waiting for you.</h2>
+          <p>
+            Browse our technology, accessories and business supplies to get
+            started.
+          </p>
+          <Link className="button" to="/shop">
+            Explore products →
+          </Link>
+        </div>
       ) : (
-        <>
+        <div className="cart-layout">
           <div className="cart-list">
             {items.map((item) => (
               <article key={item.id}>
                 <img src={imageFor(item)} alt="" />
-                <div>
+                <div className="cart-item-info">
+                  <p className="eyebrow">
+                    {item.category || "MacroByte Trade"}
+                  </p>
                   <h2>{item.name}</h2>
-                  <p>{price(item.price)}</p>
-                  <button onClick={() => change(item.id, item.quantity - 1)}>
-                    −
-                  </button>
-                  <span>{item.quantity}</span>
-                  <button onClick={() => change(item.id, item.quantity + 1)}>
-                    +
-                  </button>
-                  <button onClick={() => change(item.id, 0)}>Remove</button>
+                  <strong>{price(item.price)}</strong>
+                  <div className="cart-item-actions">
+                    <div className="quantity-control">
+                      <button
+                        aria-label="Decrease quantity"
+                        onClick={() => change(item.id, item.quantity - 1)}
+                      >
+                        −
+                      </button>
+                      <span>{item.quantity}</span>
+                      <button
+                        aria-label="Increase quantity"
+                        onClick={() => change(item.id, item.quantity + 1)}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <button
+                      className="remove-item"
+                      onClick={() => change(item.id, 0)}
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}
           </div>
-          <Link className="button" to="/contact">
-            Request a quote
-          </Link>
-        </>
+          <aside className="cart-summary">
+            <h2>Order summary</h2>
+            <p>
+              <span>Products ({totalItems})</span>
+              <strong>
+                {total ? `৳${total.toLocaleString("en-BD")}` : "On request"}
+              </strong>
+            </p>
+            <p>
+              <span>Delivery</span>
+              <strong>Confirmed after order</strong>
+            </p>
+            <div>
+              <span>Estimated total</span>
+              <strong>
+                {total
+                  ? `৳${total.toLocaleString("en-BD")}`
+                  : "Request a quote"}
+              </strong>
+            </div>
+            <Link className="button" to="/contact">
+              Request a quote →
+            </Link>
+            <small>
+              We will confirm stock, delivery options and final pricing before
+              your order is placed.
+            </small>
+          </aside>
+        </div>
       )}
     </main>
   );
