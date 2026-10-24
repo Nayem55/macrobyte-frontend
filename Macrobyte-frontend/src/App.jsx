@@ -317,79 +317,68 @@ function useCatalogue() {
 
 function Home() {
   const { site, products, categories, services, error } = useCatalogue();
-  const visualItems = [
-    ...categories,
-    ...products.filter((product) => product.images?.[0] || product.imageUrl),
-  ];
-  const sheetItems = Array.from(
-    { length: Math.min(Math.max(visualItems.length, 6), 6) },
-    (_, index) => visualItems[index % visualItems.length],
-  ).filter(Boolean);
   const featuredProducts = products.slice(0, 7);
   return (
     <>
-      <section className="catalogue-hero">
-        <div className="catalogue-sheet" aria-label="MacroByte catalogue preview">
-          {sheetItems.map((item, index) => (
-            <Link
-              className={`catalogue-tile catalogue-tile-${(index % 6) + 1}`}
-              key={`${item.id || item.slug}-${index}`}
-              to={item.slug ? productPath(item) : `/shop?category=${encodeURIComponent(item.slug || item.name)}`}
-              aria-label={`Explore ${item.name}`}
-            >
-              <img
-                src={imageFor(item)}
-                alt={item.name || "MacroByte catalogue item"}
-                width="640"
-                height="480"
-                loading={index > 3 ? "lazy" : undefined}
-                fetchPriority={index < 2 ? "high" : undefined}
-                onError={(event) => {
-                  event.currentTarget.onerror = null;
-                  event.currentTarget.src = "/assets/macrobyte-logo.png";
-                }}
-              />
+      <section className="home-hero">
+        <div className="hero-copy">
+          <h1>Technology that works.</h1>
+          <p>
+            {site?.hero?.description ||
+              "Technology, services, and business supply in one place."}
+          </p>
+          <div className="hero-actions">
+            <Link className="button" to="/shop">
+              Explore products <span aria-hidden="true">→</span>
             </Link>
-          ))}
-          <div className="catalogue-intro">
+            <Link className="hero-story" to="/about">
+              <i aria-hidden="true">▶</i> Watch our story
+            </Link>
+          </div>
+        </div>
+        <aside className="hero-visual" aria-label="MacroByte Trade solutions">
+          <div className="hero-orbit hero-orbit-one" aria-hidden="true" />
+          <div className="hero-orbit hero-orbit-two" aria-hidden="true" />
+          <div className="hero-logo-plate">
             <img
               src={site?.logoUrl || "/assets/macrobyte-logo.png"}
               alt={site?.brand || "MacroByte Trade"}
-              width="220"
-              height="90"
+              width="380"
+              height="328"
               fetchPriority="high"
             />
-            <h1>Technology works.</h1>
-            <p>
-              {site?.hero?.description ||
-                "Technology, practical support and business supply for homes, shops and growing teams."}
-            </p>
-            <Link className="catalogue-primary-action" to="/shop">
-              Explore products
-            </Link>
-            <div className="catalogue-intro-links">
-              <Link to="/services">Services</Link>
-              <Link to="/products">Categories</Link>
-              <Link to="/contact">Get support</Link>
-            </div>
           </div>
+          <div className="hero-float hero-float-top">
+            <i aria-hidden="true">+</i>
+            <span>Smart IT<small>Solutions</small></span>
+          </div>
+          <div className="hero-float hero-float-right">
+            <i aria-hidden="true">▣</i>
+            <span>Business<small>Supplies</small></span>
+          </div>
+          <div className="hero-float hero-float-bottom">
+            <i aria-hidden="true">◌</i>
+            <span>Creative &amp;<small>Digital services</small></span>
+          </div>
+        </aside>
+        <div className="hero-benefits">
+          <span><i aria-hidden="true">▣</i><b>Wide Product Range<small>For Home &amp; Business</small></b></span>
+          <span><i aria-hidden="true">+</i><b>Expert Support<small>Reliable &amp; Responsive</small></b></span>
+          <span><i aria-hidden="true">◈</i><b>Trusted Partner<small>Quality &amp; Genuine Products</small></b></span>
+          <span><i aria-hidden="true">▣</i><b>Fast Nationwide Delivery<small>Across Bangladesh</small></b></span>
         </div>
-        <div className="catalogue-hero-meta">
-          <p>Browse actual products, compare options and send a focused requirement.</p>
-          <dl>
-            <div>
-              <dt>{products.length || "—"}</dt>
-              <dd>Products</dd>
-            </div>
-            <div>
-              <dt>{categories.length || "—"}</dt>
-              <dd>Categories</dd>
-            </div>
-            <div>
-              <dt>{services.length || "—"}</dt>
-              <dd>Services</dd>
-            </div>
-          </dl>
+      </section>
+
+      <section className="tech-pulse" aria-label="MacroByte catalogue overview">
+        <div className="tech-pulse-copy">
+          <h2>Technology, support &amp; supply.</h2>
+          <p>Explore a practical catalogue built around the equipment, setup and day-to-day support modern work demands.</p>
+          <Link to="/contact">Plan a requirement with us <span aria-hidden="true">→</span></Link>
+        </div>
+        <div className="tech-stats">
+          <article><strong>{products.length || "—"}</strong><span>Products to explore</span></article>
+          <article><strong>{categories.length || "—"}</strong><span>Technology categories</span></article>
+          <article><strong>{services.length || "—"}</strong><span>Service capabilities</span></article>
         </div>
       </section>
 
