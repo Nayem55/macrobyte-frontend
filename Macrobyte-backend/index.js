@@ -24,7 +24,7 @@ const defaults = {
   brand: 'MacroByte Trade',
   tagline: 'Technology. Services. Supply.',
   hero: { eyebrow: 'One partner. Many solutions.', title: 'Technology that works for your world.', description: 'From essential online applications to IT maintenance, smart installations, creative design and dependable business supplies — MacroByte Trade helps people and businesses get things done.' },
-  contact: { address: 'House 29, Road 2, Block B, Banasree, Rampura, Dhaka, Bangladesh', phone: '+880 0000 000 000', email: 'hello@macrobytetrade.com' },
+  contact: { address: 'House 29, Road 2, Block B, Banasree, Rampura, Dhaka, Bangladesh', phone: '+880 0000 000 000', whatsapp: '+8801989480551', email: 'hello@macrobytetrade.com' },
   about: { heading: 'Local service. Practical solutions.', description: 'MacroByte Trade is your trusted local partner for everyday digital help, technology support, creative work and business supply needs.' },
   logoUrl: '/assets/macrobyte-logo.png',
   integrations: { cloudinary: { enabled:true, cloudName:'', apiKey:'', apiSecret:'', uploadPreset:'', folder:'macrobyte-trade' } },

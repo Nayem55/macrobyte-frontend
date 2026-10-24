@@ -223,7 +223,7 @@ function WhatsAppButton() {
   const [phone, setPhone] = useState("");
   useEffect(() => {
     api("/site")
-      .then((site) => setPhone(site?.contact?.phone || ""))
+      .then((site) => setPhone(site?.contact?.whatsapp || site?.contact?.phone || ""))
       .catch(() => setPhone(""));
   }, []);
   const number = phone.replace(/\D/g, "");
