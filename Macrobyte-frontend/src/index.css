@@ -2252,10 +2252,39 @@ textarea {
   .product-gallery-stage > img {
     animation: none;
   }
+  .page-loader-spinner {
+    animation: none;
+    border-top-color: #17275c;
+  }
 }
 
 .catalogue-page {
   padding-top: 68px;
+}
+.page-loader {
+  display: grid;
+  min-height: min(52vh, 520px);
+  place-content: center;
+  justify-items: center;
+  gap: 16px;
+  color: #405170;
+  text-align: center;
+}
+.page-loader-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #dce5f3;
+  border-top-color: #f05232;
+  border-radius: 50%;
+  animation: page-loader-spin 750ms linear infinite;
+}
+.page-loader p {
+  margin: 0;
+  color: #17275c;
+  font-weight: 750;
+}
+@keyframes page-loader-spin {
+  to { transform: rotate(360deg); }
 }
 .catalogue-intro {
   display: flex;

@@ -305,6 +305,15 @@ function ProductCard({ product, add }) {
   );
 }
 
+function PageLoader({ label = "Loading" }) {
+  return (
+    <main className="page page-loader" role="status" aria-live="polite">
+      <span className="page-loader-spinner" aria-hidden="true" />
+      <p>{label}</p>
+    </main>
+  );
+}
+
 function useCatalogue() {
   const [state, setState] = useState({
     products: [],
@@ -312,6 +321,7 @@ function useCatalogue() {
     services: [],
     site: null,
     error: "",
+    loading: true,
   });
   useEffect(() => {
     Promise.all([
@@ -321,17 +331,18 @@ function useCatalogue() {
       api("/services"),
     ])
       .then(([site, products, categories, services]) =>
-        setState({ site, products, categories, services, error: "" }),
+        setState({ site, products, categories, services, error: "", loading: false }),
       )
       .catch((error) =>
-        setState((value) => ({ ...value, error: error.message })),
+        setState((value) => ({ ...value, error: error.message, loading: false })),
       );
   }, []);
   return state;
 }
 
 function Home() {
-  const { site, products, categories, services, error } = useCatalogue();
+  const { site, products, categories, services, error, loading } = useCatalogue();
+  if (loading) return <PageLoader label="Loading MacroByte Trade" />;
   return (
     <>
       <section className="home-hero">
@@ -608,6 +619,7 @@ function Home() {
 function Shop() {
   const [allProducts, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const category = searchParams.get("category") || "";
@@ -622,7 +634,8 @@ function Shop() {
         setProducts(products);
         setCategories(list);
       })
-      .catch(() => setProducts([]));
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
   }, []);
   const brands = useMemo(
     () =>
@@ -674,6 +687,7 @@ function Shop() {
     );
   };
   const clearFilters = () => setSearchParams({}, { replace: true });
+  if (loading) return <PageLoader label="Loading product catalogue" />;
   return (
     <main className="page catalogue-page">
       <header className="catalogue-intro">
@@ -713,7 +727,8 @@ function Shop() {
 }
 
 function Categories() {
-  const { products, categories } = useCatalogue();
+  const { products, categories, loading } = useCatalogue();
+  if (loading) return <PageLoader label="Loading categories" />;
   return (
     <main className="page catalogue-page">
       <header className="catalogue-intro catalogue-directory-intro"><div><span className="eyebrow">Product catalogue</span><h1>Browse by category.</h1><p>Explore product groups built for home, office, and growing businesses.</p></div><Link className="button" to="/shop">Browse all products</Link></header>
@@ -739,8 +754,9 @@ function Categories() {
 }
 
 function Brands() {
-  const { products } = useCatalogue();
+  const { products, loading } = useCatalogue();
   const brands = useMemo(() => Array.from(new Set(products.map((product) => product.brand).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [products]);
+  if (loading) return <PageLoader label="Loading brands" />;
   return (
     <main className="page catalogue-page">
       <header className="catalogue-intro catalogue-directory-intro"><div><span className="eyebrow">Product catalogue</span><h1>Shop trusted brands.</h1><p>Browse the brands currently available through MacroByte Trade.</p></div><Link className="button" to="/shop">Browse all products</Link></header>
@@ -789,11 +805,7 @@ function Product() {
     setActiveImage(0);
   }, [product?.id]);
   if (product === undefined)
-    return (
-      <main className="page">
-        <p>Loading product…</p>
-      </main>
-    );
+    return <PageLoader label="Loading product details" />;
   if (!product)
     return (
       <main className="page">
@@ -1042,7 +1054,8 @@ function Product() {
 }
 
 function Services() {
-  const { services } = useCatalogue();
+  const { services, loading } = useCatalogue();
+  if (loading) return <PageLoader label="Loading services" />;
   return (
     <main className="page">
       <span className="eyebrow">What we do</span>
