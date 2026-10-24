@@ -15,8 +15,22 @@ const api = async (path) => {
   if (!response.ok) throw new Error("Unable to load this information.");
   return response.json();
 };
-const imageFor = (item) =>
-  item?.imageUrl || item?.images?.[0] || "/assets/macrobyte-logo.png";
+const galleryFor = (item) =>
+  Array.from(
+    new Set(
+      [
+        ...(Array.isArray(item?.images)
+          ? item.images
+          : typeof item?.images === "string"
+            ? item.images.split(/\r?\n/)
+            : []),
+        item?.imageUrl,
+      ]
+        .map((value) => String(value || "").trim())
+        .filter(Boolean),
+    ),
+  );
+const imageFor = (item) => galleryFor(item)[0] || "/assets/macrobyte-logo.png";
 const price = (value) => value || "Request a quote";
 const productPath = (product) =>
   `/product/${encodeURIComponent(product.slug || product.id)}`;
@@ -249,7 +263,7 @@ function WhatsAppButton() {
 }
 
 function ProductCard({ product, add }) {
-  const productImage = product.images?.[0] || product.imageUrl;
+  const productImage = galleryFor(product)[0];
   return (
     <article className="product-card">
       {productImage ? (
@@ -707,6 +721,7 @@ function Product() {
   const [related, setRelated] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [reviewMessage, setReviewMessage] = useState("");
+  const [activeImage, setActiveImage] = useState(0);
   useEffect(() => {
     api("/products")
       .then((items) => {
@@ -733,6 +748,9 @@ function Product() {
       .then(setReviews)
       .catch(() => setReviews([]));
   }, [product?.id]);
+  useEffect(() => {
+    setActiveImage(0);
+  }, [product?.id]);
   if (product === undefined)
     return (
       <main className="page">
@@ -745,6 +763,16 @@ function Product() {
         <h1>Product not found</h1>
         <Link to="/shop">Return to shop</Link>
       </main>
+    );
+  const galleryImages = galleryFor(product);
+  const visibleImages = galleryImages.length
+    ? galleryImages
+    : ["/assets/macrobyte-logo.png"];
+  const selectedImage = visibleImages[activeImage] || visibleImages[0];
+  const changeImage = (direction) =>
+    setActiveImage(
+      (index) =>
+        (index + direction + visibleImages.length) % visibleImages.length,
     );
   const add = (target = product) => {
     const items = readCart();
@@ -785,8 +813,59 @@ function Product() {
   return (
     <main className="page product-page">
       <section className="product-detail">
-        <div className="product-detail-media">
-          <img src={imageFor(product)} alt={product.name} />
+        <div className="product-detail-media product-gallery">
+          <div className="product-gallery-stage">
+            <img
+              key={selectedImage}
+              src={selectedImage}
+              alt={product.name}
+              width="960"
+              height="720"
+              fetchPriority="high"
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = "/assets/macrobyte-logo.png";
+              }}
+            />
+            {visibleImages.length > 1 && (
+              <>
+                <button
+                  className="gallery-control gallery-control-previous"
+                  type="button"
+                  aria-label="Show previous product image"
+                  onClick={() => changeImage(-1)}
+                >
+                  <span aria-hidden="true">‹</span>
+                </button>
+                <button
+                  className="gallery-control gallery-control-next"
+                  type="button"
+                  aria-label="Show next product image"
+                  onClick={() => changeImage(1)}
+                >
+                  <span aria-hidden="true">›</span>
+                </button>
+                <span className="gallery-count" aria-live="polite">
+                  {activeImage + 1} / {visibleImages.length}
+                </span>
+              </>
+            )}
+          </div>
+          {visibleImages.length > 1 && (
+            <div className="product-gallery-thumbnails" aria-label="Product images">
+              {visibleImages.map((src, index) => (
+                <button
+                  key={src}
+                  className="product-gallery-thumbnail"
+                  type="button"
+                  aria-label={`Show image ${index + 1} of ${visibleImages.length}`}
+                  aria-pressed={index === activeImage}
+                  onClick={() => setActiveImage(index)}
+                  style={{ backgroundImage: `url("${src}")` }}
+                />
+              ))}
+            </div>
+          )}
         </div>
         <div className="product-detail-info">
           <p className="eyebrow">{product.category}</p>
