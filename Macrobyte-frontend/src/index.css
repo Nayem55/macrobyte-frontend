@@ -2343,38 +2343,59 @@ textarea {
   position: sticky;
   top: 100px;
   margin: 0;
-  padding: 24px;
-  background: #eaf0fb;
+  padding: 26px;
+  border: 1px solid #dbe3f0;
+  border-top: 4px solid #f05232;
+  border-radius: 18px;
+  background: #fff;
 }
 .catalogue-filter-heading {
-  margin-bottom: 22px;
+  margin-bottom: 24px;
 }
 .catalogue-filter-heading h2 {
-  margin: 0 0 6px;
+  margin: 0 0 8px;
   color: #17275c;
-  font-size: 1.25rem;
+  font-size: 1.38rem;
+  line-height: 1.1;
 }
 .catalogue-filter-heading p {
   margin: 0;
   color: #52627f;
-  font-size: 0.84rem;
-  line-height: 1.5;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.catalogue-layout .catalogue-search {
+  padding: 14px;
+  background: #f3f6fc;
+}
+.catalogue-layout .catalogue-search label {
+  margin-bottom: 8px;
+  color: #17275c;
 }
 .catalogue-layout .catalogue-search input {
   min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid #d7e0ee;
+  border-radius: 9px;
+  background: #fff;
   font-size: 0.9rem;
 }
 .catalogue-layout .catalogue-filter-grid {
   grid-template-columns: 1fr;
-  gap: 13px;
-  margin-top: 16px;
+  gap: 17px;
+  margin-top: 22px;
 }
 .catalogue-layout .catalogue-filter-grid label {
-  gap: 5px;
+  gap: 7px;
+  color: #17275c;
+  font-size: 0.76rem;
 }
 .catalogue-layout .catalogue-filter-grid input,
 .catalogue-layout .catalogue-filter-grid select {
-  min-height: 44px;
+  min-height: 46px;
+  border: 1px solid #d7e0ee;
+  border-radius: 9px;
+  background: #fbfcff;
   font-size: 0.88rem;
 }
 .catalogue-clear {
@@ -2549,6 +2570,18 @@ textarea {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+@media (max-width: 780px) {
+  .catalogue-layout {
+    display: block;
+  }
+  .catalogue-layout .catalogue-controls {
+    position: static;
+    margin-bottom: 28px;
+  }
+  .catalogue-layout .catalogue-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 @media (max-width: 700px) {
   .catalogue-page {
     padding-top: 40px;
@@ -2576,7 +2609,10 @@ textarea {
   .catalogue-layout .catalogue-controls {
     position: static;
     margin: 0 -18px 28px;
-    padding: 20px 18px;
+    padding: 22px 18px;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
   }
   .catalogue-layout .catalogue-filter-grid {
     grid-template-columns: 1fr;
