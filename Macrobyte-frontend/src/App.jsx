@@ -4,6 +4,7 @@ import {
   Route,
   Routes,
   useNavigate,
+  useLocation,
   useParams,
   useSearchParams,
 } from "react-router-dom";
@@ -1101,9 +1102,17 @@ function NotFound() {
     </main>
   );
 }
+function ScrollToRouteTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, [pathname]);
+  return null;
+}
 export default function App() {
   return (
     <>
+      <ScrollToRouteTop />
       <Header />
       <main className="app-main">
         <Routes>

@@ -3,6 +3,9 @@
   color: #172238;
   background: #f5f7fc;
 }
+html {
+  scroll-behavior: smooth;
+}
 * {
   box-sizing: border-box;
 }
