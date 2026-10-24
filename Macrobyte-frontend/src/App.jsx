@@ -16,6 +16,8 @@ const api = async (path) => {
 const imageFor = (item) =>
   item?.imageUrl || item?.images?.[0] || "/assets/macrobyte-logo.png";
 const price = (value) => value || "Request a quote";
+const productPath = (product) =>
+  `/product/${encodeURIComponent(product.slug || product.id)}`;
 const readCart = () => {
   try {
     return JSON.parse(localStorage.getItem("mb_cart") || "[]");
@@ -207,7 +209,7 @@ function ProductCard({ product, add }) {
         <Link
           className="product-media"
           aria-label={`View ${product.name}`}
-          to={`/product/${product.id}`}
+          to={productPath(product)}
         >
           <img src={productImage} alt={product.name} />
         </Link>
@@ -215,7 +217,7 @@ function ProductCard({ product, add }) {
         <Link
           className="product-placeholder"
           aria-label={`View ${product.name}`}
-          to={`/product/${product.id}`}
+          to={productPath(product)}
         >
           <img src="/assets/macrobyte-logo.png" alt="" />
           <span>Image coming soon</span>
@@ -226,7 +228,7 @@ function ProductCard({ product, add }) {
         <h2>{product.name}</h2>
         <strong>{price(product.price)}</strong>
         <div className="card-actions">
-          <Link to={`/product/${product.id}`}>View product</Link>
+          <Link to={productPath(product)}>View product</Link>
           {add && (
             <button type="button" onClick={() => add(product)}>
               Add to cart
@@ -460,13 +462,29 @@ function Categories() {
 }
 
 function Product() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [product, setProduct] = useState(undefined);
+  const [related, setRelated] = useState([]);
   useEffect(() => {
     api("/products")
-      .then((items) => setProduct(items.find((item) => item.id === id) || null))
+      .then((items) => {
+        const current =
+          items.find((item) => item.slug === slug || item.id === slug) || null;
+        setProduct(current);
+        setRelated(
+          current
+            ? items
+                .filter(
+                  (item) =>
+                    item.id !== current.id &&
+                    item.category === current.category,
+                )
+                .slice(0, 4)
+            : [],
+        );
+      })
       .catch(() => setProduct(null));
-  }, [id]);
+  }, [slug]);
   if (product === undefined)
     return (
       <main className="page">
@@ -480,39 +498,112 @@ function Product() {
         <Link to="/shop">Return to shop</Link>
       </main>
     );
-  const add = () => {
+  const add = (target = product) => {
     const items = readCart();
-    const old = items.find((item) => item.id === product.id);
+    const old = items.find((item) => item.id === target.id);
     writeCart(
       old
         ? items.map((item) =>
-            item.id === product.id
+            item.id === target.id
               ? { ...item, quantity: item.quantity + 1 }
               : item,
           )
-        : [...items, { ...product, quantity: 1 }],
+        : [...items, { ...target, quantity: 1 }],
     );
   };
   return (
-    <main className="page product-detail">
-      <img src={imageFor(product)} alt={product.name} />
-      <div>
-        <p className="eyebrow">{product.category}</p>
-        <h1>{product.name}</h1>
-        <p>{product.details || product.description || product.model}</p>
-        <h2>{price(product.price)}</h2>
-        <p>{product.stockStatus || "Stock confirmation required"}</p>
-        {product.features?.length > 0 && (
-          <ul>
-            {product.features.map((feature) => (
-              <li key={feature}>{feature}</li>
+    <main className="page product-page">
+      <section className="product-detail">
+        <div className="product-detail-media">
+          <img src={imageFor(product)} alt={product.name} />
+        </div>
+        <div className="product-detail-info">
+          <p className="eyebrow">{product.category}</p>
+          <h1>{product.name}</h1>
+          <p className="product-copy">
+            {product.details || product.description || product.model}
+          </p>
+          <div className="product-purchase">
+            <div>
+              <span>Price</span>
+              <strong>{price(product.price)}</strong>
+            </div>
+            <p className="stock-status">
+              {product.stockStatus || "Stock confirmation required"}
+            </p>
+          </div>
+          {product.features?.length > 0 && (
+            <div className="product-features">
+              <h2>Product highlights</h2>
+              <ul>
+                {product.features.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="product-detail-actions">
+            <button
+              className="button"
+              type="button"
+              onClick={() => add(product)}
+            >
+              Add to cart
+            </button>
+            <Link to={`/contact?product=${encodeURIComponent(product.name)}`}>
+              Request a quote
+            </Link>
+          </div>
+          <p className="product-assurance">
+            Secure your stock before visiting—we will confirm availability and
+            delivery options.
+          </p>
+        </div>
+      </section>
+      <section
+        className="product-confidence"
+        aria-label="Buying with MacroByte Trade"
+      >
+        <div>
+          <strong>Stock confirmation</strong>
+          <span>We confirm availability before your order is finalised.</span>
+        </div>
+        <div>
+          <strong>Business support</strong>
+          <span>Ask for delivery, bulk pricing, or a tailored quotation.</span>
+        </div>
+        <div>
+          <strong>Local assistance</strong>
+          <span>Get practical help from our Dhaka team when you need it.</span>
+        </div>
+      </section>
+      <section className="product-reviews">
+        <div>
+          <span className="eyebrow">Customer feedback</span>
+          <h2>Reviews for this product</h2>
+        </div>
+        <p>
+          Customer reviews will appear here as verified orders are completed.
+        </p>
+      </section>
+      {related.length > 0 && (
+        <section className="related-products">
+          <div className="section-title">
+            <div>
+              <span className="eyebrow">You may also need</span>
+              <h2>Related products</h2>
+            </div>
+            <Link to={`/shop?category=${encodeURIComponent(product.category)}`}>
+              View all in {product.category} →
+            </Link>
+          </div>
+          <div className="cards">
+            {related.map((item) => (
+              <ProductCard key={item.id} product={item} add={add} />
             ))}
-          </ul>
-        )}
-        <button className="button" type="button" onClick={add}>
-          Add to cart
-        </button>
-      </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }
@@ -674,7 +765,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/products" element={<Categories />} />
-          <Route path="/product/:id" element={<Product />} />
+          <Route path="/product/:slug" element={<Product />} />
           <Route path="/services" element={<Services />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
