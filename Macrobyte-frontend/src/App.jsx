@@ -362,6 +362,31 @@ function Home() {
           </span>
         </div>
       </section>
+      <section className="tech-pulse" aria-label="MacroByte catalogue overview">
+        <div className="tech-pulse-copy">
+          <span className="eyebrow">MacroByte signal</span>
+          <h2>Technology sourcing, support and services—working as one.</h2>
+          <p>
+            Explore a practical catalogue built around the equipment, setup and
+            day-to-day support modern work demands.
+          </p>
+          <Link to="/contact">Plan a requirement with us <span>→</span></Link>
+        </div>
+        <div className="tech-stats">
+          <article>
+            <strong>{products.length || "—"}</strong>
+            <span>Products to explore</span>
+          </article>
+          <article>
+            <strong>{categories.length || "—"}</strong>
+            <span>Technology categories</span>
+          </article>
+          <article>
+            <strong>{services.length || "—"}</strong>
+            <span>Service capabilities</span>
+          </article>
+        </div>
+      </section>
       <section className="section">
         <div className="section-title">
           <div>
@@ -413,6 +438,34 @@ function Home() {
           ))}
         </div>
       </section>
+      <section className="solution-matrix">
+        <div className="solution-matrix-intro">
+          <span className="eyebrow">Built for real work</span>
+          <h2>A clearer path from idea to a working setup.</h2>
+          <p>
+            Whether you are upgrading one desk or planning for an entire team,
+            we help bring the right pieces together.
+          </p>
+          <Link to="/contact">Start a conversation →</Link>
+        </div>
+        <div className="solution-matrix-grid">
+          <article>
+            <span>01</span>
+            <h3>Equip</h3>
+            <p>Practical technology and supplies for workspaces and everyday use.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Connect</h3>
+            <p>Accessories and infrastructure choices that fit together properly.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Support</h3>
+            <p>Clear guidance when you need to compare, source or move forward.</p>
+          </article>
+        </div>
+      </section>
       <section className="section how-it-works">
         <div className="section-title">
           <div>
@@ -446,6 +499,42 @@ function Home() {
               suited to your requirements.
             </p>
           </article>
+        </div>
+      </section>
+      <section className="section featured-products">
+        <div className="section-title">
+          <div>
+            <span className="eyebrow">Selected from the catalogue</span>
+            <h2>Popular essentials, ready to explore.</h2>
+          </div>
+          <Link to="/shop">See all products →</Link>
+        </div>
+        <div className="cards featured-product-grid">
+          {products.slice(0, 4).map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+      <section className="category-network">
+        <div>
+          <span className="eyebrow">Technology network</span>
+          <h2>Find the right starting point.</h2>
+          <p>
+            Browse organised product areas, then move from discovery to a
+            focused enquiry whenever you need guidance.
+          </p>
+        </div>
+        <div className="network-links">
+          {categories.slice(0, 8).map((category, index) => (
+            <Link
+              key={category.id}
+              to={`/shop?category=${encodeURIComponent(category.slug)}`}
+            >
+              <span>0{index + 1}</span>
+              {category.name}
+              <b>↗</b>
+            </Link>
+          ))}
         </div>
       </section>
       <section className="business-callout">
