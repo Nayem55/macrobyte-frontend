@@ -2333,6 +2333,80 @@ textarea {
   padding: clamp(20px, 3vw, 32px);
   background: #eaf0fb;
 }
+.catalogue-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(28px, 4vw, 56px);
+}
+.catalogue-layout .catalogue-controls {
+  position: sticky;
+  top: 100px;
+  margin: 0;
+  padding: 24px;
+  background: #eaf0fb;
+}
+.catalogue-filter-heading {
+  margin-bottom: 22px;
+}
+.catalogue-filter-heading h2 {
+  margin: 0 0 6px;
+  color: #17275c;
+  font-size: 1.25rem;
+}
+.catalogue-filter-heading p {
+  margin: 0;
+  color: #52627f;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+.catalogue-layout .catalogue-search input {
+  min-height: 48px;
+  font-size: 0.9rem;
+}
+.catalogue-layout .catalogue-filter-grid {
+  grid-template-columns: 1fr;
+  gap: 13px;
+  margin-top: 16px;
+}
+.catalogue-layout .catalogue-filter-grid label {
+  gap: 5px;
+}
+.catalogue-layout .catalogue-filter-grid input,
+.catalogue-layout .catalogue-filter-grid select {
+  min-height: 44px;
+  font-size: 0.88rem;
+}
+.catalogue-clear {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  color: #fff;
+  border: 0;
+  background: #17275c;
+  font-weight: 800;
+  cursor: pointer;
+}
+.catalogue-clear:hover,
+.catalogue-clear:focus-visible {
+  background: #f05232;
+}
+.catalogue-products {
+  min-width: 0;
+}
+.catalogue-products .catalogue-results {
+  min-height: 44px;
+  margin: 0 0 20px;
+  padding: 0 0 14px;
+  border-bottom: 2px solid #dbe3f0;
+}
+.catalogue-products .catalogue-results span {
+  color: #62708a;
+  font-size: 0.8rem;
+}
+.catalogue-products .catalogue-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 .catalogue-search label,
 .catalogue-filter-grid label {
   display: grid;
@@ -2467,6 +2541,13 @@ textarea {
   .brand-directory {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .catalogue-layout {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 24px;
+  }
+  .catalogue-products .catalogue-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 700px) {
   .catalogue-page {
@@ -2488,6 +2569,24 @@ textarea {
     margin-right: -18px;
     margin-left: -18px;
     padding: 20px 18px;
+  }
+  .catalogue-layout {
+    display: block;
+  }
+  .catalogue-layout .catalogue-controls {
+    position: static;
+    margin: 0 -18px 28px;
+    padding: 20px 18px;
+  }
+  .catalogue-layout .catalogue-filter-grid {
+    grid-template-columns: 1fr;
+  }
+  .catalogue-products .catalogue-results {
+    align-items: flex-start;
+    gap: 5px;
+  }
+  .catalogue-products .catalogue-cards {
+    grid-template-columns: 1fr;
   }
   .catalogue-filter-grid {
     grid-template-columns: 1fr;

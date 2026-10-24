@@ -701,26 +701,32 @@ function Shop() {
           <strong>{categories.length}</strong><span>Categories</span>
         </div>
       </header>
-      <section className="catalogue-controls" aria-label="Filter products">
-        <div className="catalogue-search">
-          <label htmlFor="catalogue-search">Search catalogue</label>
-          <input id="catalogue-search" value={query} onChange={(event) => update("q", event.target.value)} placeholder="Search products, brands or models" />
-        </div>
-        <div className="catalogue-filter-grid">
-          <label>Category<select value={category} onChange={(event) => update("category", event.target.value)}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
-          <label>Brand<select value={brand} onChange={(event) => update("brand", event.target.value)}><option value="">All brands</option>{brands.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
-          <label>Minimum price<input type="number" min="0" value={minPrice} onChange={(event) => update("minPrice", event.target.value)} placeholder="Any" /></label>
-          <label>Maximum price<input type="number" min="0" value={maxPrice} onChange={(event) => update("maxPrice", event.target.value)} placeholder="Any" /></label>
-          <label>Availability<select value={availability} onChange={(event) => update("availability", event.target.value)}><option value="">All products</option><option value="in-stock">In stock</option></select></label>
-          <label>Sort by<select value={sort} onChange={(event) => update("sort", event.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></label>
-        </div>
-        <div className="catalogue-results"><p><strong>{products.length}</strong> product{products.length === 1 ? "" : "s"} found</p>{(query || category || brand || minPrice || maxPrice || availability || sort !== "featured") && <button type="button" onClick={clearFilters}>Clear filters</button>}</div>
-      </section>
-      <div className="cards catalogue-cards">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} add={add} />
-        ))}
-        {!products.length && <div className="catalogue-empty"><h2>No products match these filters.</h2><p>Try clearing a filter or searching a different product name.</p><button type="button" onClick={clearFilters}>Show all products</button></div>}
+      <div className="catalogue-layout">
+        <aside className="catalogue-controls" aria-label="Filter products">
+          <div className="catalogue-filter-heading"><h2>Filter products</h2><p>Refine the catalogue to match your requirement.</p></div>
+          <div className="catalogue-search">
+            <label htmlFor="catalogue-search">Search catalogue</label>
+            <input id="catalogue-search" value={query} onChange={(event) => update("q", event.target.value)} placeholder="Search products, brands or models" />
+          </div>
+          <div className="catalogue-filter-grid">
+            <label>Category<select value={category} onChange={(event) => update("category", event.target.value)}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
+            <label>Brand<select value={brand} onChange={(event) => update("brand", event.target.value)}><option value="">All brands</option>{brands.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+            <label>Minimum price<input type="number" min="0" value={minPrice} onChange={(event) => update("minPrice", event.target.value)} placeholder="Any" /></label>
+            <label>Maximum price<input type="number" min="0" value={maxPrice} onChange={(event) => update("maxPrice", event.target.value)} placeholder="Any" /></label>
+            <label>Availability<select value={availability} onChange={(event) => update("availability", event.target.value)}><option value="">All products</option><option value="in-stock">In stock</option></select></label>
+            <label>Sort by<select value={sort} onChange={(event) => update("sort", event.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></label>
+          </div>
+          {(query || category || brand || minPrice || maxPrice || availability || sort !== "featured") && <button className="catalogue-clear" type="button" onClick={clearFilters}>Clear all filters</button>}
+        </aside>
+        <section className="catalogue-products" aria-label="Product results">
+          <div className="catalogue-results"><p><strong>{products.length}</strong> product{products.length === 1 ? "" : "s"} found</p><span>Stock and final pricing are confirmed before ordering.</span></div>
+          <div className="cards catalogue-cards">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} add={add} />
+            ))}
+            {!products.length && <div className="catalogue-empty"><h2>No products match these filters.</h2><p>Try clearing a filter or searching a different product name.</p><button type="button" onClick={clearFilters}>Show all products</button></div>}
+          </div>
+        </section>
       </div>
     </main>
   );
