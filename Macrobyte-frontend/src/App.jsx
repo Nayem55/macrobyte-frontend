@@ -80,9 +80,6 @@ function Header() {
           <img src="/assets/macrobyte-logo.png" alt="MacroByte Trade" />
         </Link>
         <nav className="mb-nav" aria-label="Main navigation">
-          <Link to="/" onClick={close}>
-            Home
-          </Link>
           <Link to="/services" onClick={close}>
             Services
           </Link>
