@@ -371,7 +371,7 @@ function Home() {
           <Link to="/services">All services →</Link>
         </div>
         <div className="cards service-cards">
-          {services.slice(0, 3).map((service) => (
+          {services.slice(0, 6).map((service) => (
             <article className="service-card" key={service.id}>
               <h3>{service.name || service.title}</h3>
               <p>{service.description}</p>
