@@ -352,6 +352,83 @@ textarea {
   grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
   gap: 20px;
 }
+.how-it-works {
+  padding-top: 18px;
+}
+.process-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.process-grid article {
+  padding: 26px;
+  border: 1px solid #dce4f1;
+  border-radius: 16px;
+  background: #fff;
+}
+.process-grid span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 22px;
+  place-items: center;
+  color: #f05232;
+  border-radius: 11px;
+  background: #fff1ed;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+.process-grid h3 {
+  margin: 0 0 9px;
+  color: #17275c;
+  font-size: 1.05rem;
+}
+.process-grid p {
+  margin: 0;
+  color: #64728b;
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+.business-callout {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto 76px;
+  padding: clamp(28px, 5vw, 52px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: linear-gradient(118deg, #17275c, #253d7d);
+  color: #fff;
+}
+.business-callout h2 {
+  max-width: 650px;
+  margin: 0 0 12px;
+  font-size: clamp(1.65rem, 3.5vw, 2.65rem);
+  line-height: 1.14;
+}
+.business-callout p {
+  max-width: 650px;
+  margin: 0;
+  color: #dbe5ff;
+  line-height: 1.65;
+}
+.business-callout .eyebrow {
+  color: #ff8068;
+}
+.business-callout-actions {
+  display: grid;
+  gap: 14px;
+  min-width: 205px;
+}
+.business-callout-actions > a:not(.button) {
+  color: #fff;
+  text-align: center;
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-decoration: none;
+}
 .category-card,
 .product-card,
 .service-card {
@@ -1272,6 +1349,13 @@ textarea {
   font-size: 0.78rem;
 }
 @media (max-width: 820px) {
+  .process-grid {
+    grid-template-columns: 1fr;
+  }
+  .business-callout {
+    align-items: flex-start;
+    flex-direction: column;
+  }
   .mb-header-inner {
     grid-template-columns: 136px minmax(0, 1fr) auto;
     gap: 18px;
@@ -1454,6 +1538,7 @@ textarea {
   .home-hero,
   .page,
   .section,
+  .business-callout,
   .footer-grid,
   .footer-bottom {
     width: min(100% - 36px, 1180px);

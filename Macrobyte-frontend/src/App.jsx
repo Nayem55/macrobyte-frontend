@@ -413,6 +413,57 @@ function Home() {
           ))}
         </div>
       </section>
+      <section className="section how-it-works">
+        <div className="section-title">
+          <div>
+            <span className="eyebrow">Straightforward support</span>
+            <h2>From requirement to the right solution.</h2>
+          </div>
+          <Link to="/contact">Talk to our team →</Link>
+        </div>
+        <div className="process-grid">
+          <article>
+            <span>01</span>
+            <h3>Tell us what you need</h3>
+            <p>
+              Share the product, service, office setup, or supply requirement
+              you are planning.
+            </p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Get practical guidance</h3>
+            <p>
+              We help compare options, confirm compatibility, availability, and
+              the next best step.
+            </p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Move forward with confidence</h3>
+            <p>
+              Receive a clear quotation, delivery plan, or service arrangement
+              suited to your requirements.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section className="business-callout">
+        <div>
+          <span className="eyebrow">For offices, shops and growing teams</span>
+          <h2>One partner for technology, services and business supply.</h2>
+          <p>
+            From a single accessory to a complete workplace requirement,
+            MacroByte Trade makes sourcing and support easier.
+          </p>
+        </div>
+        <div className="business-callout-actions">
+          <Link className="button" to="/contact">
+            Request a business quote →
+          </Link>
+          <Link to="/services">Explore our services</Link>
+        </div>
+      </section>
     </>
   );
 }
