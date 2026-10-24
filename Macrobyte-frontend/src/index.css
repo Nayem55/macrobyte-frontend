@@ -773,12 +773,13 @@ textarea {
   letter-spacing: 0.04em;
 }
 .product-gallery-thumbnails {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 .product-gallery-thumbnail {
-  display: grid;
+  display: block;
+  flex: 0 0 82px;
   height: 82px;
   padding: 5px;
   overflow: hidden;
@@ -2233,10 +2234,13 @@ textarea {
     bottom: 12px;
   }
   .product-gallery-thumbnails {
-    grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
+    flex-wrap: nowrap;
+    overflow-x: auto;
     gap: 8px;
+    padding-bottom: 2px;
   }
   .product-gallery-thumbnail {
+    flex-basis: 68px;
     height: 68px;
   }
 }
