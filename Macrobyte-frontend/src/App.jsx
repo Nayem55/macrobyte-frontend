@@ -322,7 +322,7 @@ function Home() {
     ...products.filter((product) => product.images?.[0] || product.imageUrl),
   ];
   const sheetItems = Array.from(
-    { length: Math.min(Math.max(visualItems.length, 8), 18) },
+    { length: Math.min(Math.max(visualItems.length, 6), 6) },
     (_, index) => visualItems[index % visualItems.length],
   ).filter(Boolean);
   const featuredProducts = products.slice(0, 7);
