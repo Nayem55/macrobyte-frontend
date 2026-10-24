@@ -774,6 +774,7 @@ textarea {
 }
 .product-gallery-thumbnails {
   display: flex;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -797,7 +798,7 @@ textarea {
 .product-gallery-thumbnail:focus-visible,
 .product-gallery-thumbnail[aria-pressed="true"] {
   border-color: #f05232;
-  background: #fff8f6;
+  background-color: #fff8f6;
 }
 @keyframes product-image-in {
   from { opacity: 0; }
