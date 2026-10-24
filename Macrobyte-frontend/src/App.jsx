@@ -219,6 +219,35 @@ function Footer() {
   );
 }
 
+function WhatsAppButton() {
+  const [phone, setPhone] = useState("");
+  useEffect(() => {
+    api("/site")
+      .then((site) => setPhone(site?.contact?.phone || ""))
+      .catch(() => setPhone(""));
+  }, []);
+  const number = phone.replace(/\D/g, "");
+  const configured = number.length >= 10 && !/^8800+$/.test(number);
+  const href = configured
+    ? `https://wa.me/${number}?text=${encodeURIComponent("Hello MacroByte Trade, I would like some assistance.")}`
+    : "/contact";
+  return (
+    <a
+      className="whatsapp-float"
+      href={href}
+      target={configured ? "_blank" : undefined}
+      rel={configured ? "noreferrer" : undefined}
+      aria-label={configured ? "Message MacroByte Trade on WhatsApp" : "Contact MacroByte Trade"}
+      title={configured ? "Message us on WhatsApp" : "Contact us"}
+    >
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 4.2a11.5 11.5 0 0 0-9.8 17.5L4.6 27l5.5-1.5A11.5 11.5 0 1 0 16 4.2Zm0 20.7a9.2 9.2 0 0 1-4.7-1.3l-.4-.2-3.2.8.9-3.1-.2-.4A9.2 9.2 0 1 1 16 24.9Zm5-6.9c-.3-.1-1.8-.9-2.1-1s-.5-.1-.7.2-.8 1-.9 1.1-.4.2-.7.1a7.5 7.5 0 0 1-2.2-1.4 8.2 8.2 0 0 1-1.5-1.9c-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.4.3-.6s0-.4 0-.6c-.1-.1-.7-1.7-.9-2.3-.3-.7-.5-.6-.7-.6h-.6c-.2 0-.6.1-.9.5s-1.2 1.1-1.2 2.7 1.3 3.1 1.5 3.3a10.5 10.5 0 0 0 4 3.5c.6.2 1 .4 1.4.5.6.2 1.2.2 1.6.1.5-.1 1.8-.7 2-1.4s.3-1.3.2-1.4-.2-.2-.5-.3Z" />
+      </svg>
+      <span>WhatsApp</span>
+    </a>
+  );
+}
+
 function ProductCard({ product, add }) {
   const productImage = product.images?.[0] || product.imageUrl;
   return (
@@ -1132,6 +1161,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <WhatsAppButton />
     </>
   );
 }
