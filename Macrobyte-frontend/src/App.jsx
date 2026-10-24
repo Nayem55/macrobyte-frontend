@@ -136,6 +136,9 @@ function Header() {
               ))}
             </div>
           </div>
+          <Link to="/brands" onClick={close}>
+            Brands
+          </Link>
           <Link to="/about" onClick={close}>
             About
           </Link>
@@ -208,6 +211,7 @@ function Footer() {
           <h2>Explore</h2>
           <Link to="/shop">Shop</Link>
           <Link to="/products">Categories</Link>
+          <Link to="/brands">Brands</Link>
           <Link to="/services">Services</Link>
         </div>
         <div>
@@ -607,6 +611,11 @@ function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const category = searchParams.get("category") || "";
+  const brand = searchParams.get("brand") || "";
+  const minPrice = searchParams.get("minPrice") || "";
+  const maxPrice = searchParams.get("maxPrice") || "";
+  const availability = searchParams.get("availability") || "";
+  const sort = searchParams.get("sort") || "featured";
   useEffect(() => {
     Promise.all([api("/products"), api("/categories")])
       .then(([products, list]) => {
@@ -615,9 +624,16 @@ function Shop() {
       })
       .catch(() => setProducts([]));
   }, []);
-  const products = useMemo(
+  const brands = useMemo(
     () =>
-      allProducts.filter(
+      Array.from(
+        new Set(allProducts.map((item) => item.brand).filter(Boolean)),
+      ).sort((a, b) => a.localeCompare(b)),
+    [allProducts],
+  );
+  const products = useMemo(() => {
+    const toNumber = (value) => Number(String(value || "").replace(/[^0-9.]/g, "")) || 0;
+    const filtered = allProducts.filter(
         (item) =>
           (!category ||
             item.category ===
@@ -626,10 +642,19 @@ function Shop() {
           (!query ||
             `${item.name} ${item.brand} ${item.model} ${item.category}`
               .toLowerCase()
-              .includes(query.toLowerCase())),
-      ),
-    [allProducts, categories, category, query],
-  );
+              .includes(query.toLowerCase())) &&
+          (!brand || item.brand === brand) &&
+          (!minPrice || toNumber(item.price) >= Number(minPrice)) &&
+          (!maxPrice || toNumber(item.price) <= Number(maxPrice)) &&
+          (!availability || (availability === "in-stock" && Number(item.stockQty) > 0)),
+      );
+    return [...filtered].sort((a, b) => {
+      if (sort === "price-low") return toNumber(a.price) - toNumber(b.price);
+      if (sort === "price-high") return toNumber(b.price) - toNumber(a.price);
+      if (sort === "name") return a.name.localeCompare(b.name);
+      return Number(a.order || 0) - Number(b.order || 0);
+    });
+  }, [allProducts, availability, brand, categories, category, maxPrice, minPrice, query, sort]);
   const update = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
@@ -648,41 +673,40 @@ function Shop() {
         : [...items, { ...product, quantity: 1 }],
     );
   };
+  const clearFilters = () => setSearchParams({}, { replace: true });
   return (
-    <main className="page">
-      <span className="eyebrow">MacroByte shop</span>
-      <h1>Technology for work, home and business.</h1>
-      <p>
-        Browse stocked products by category, compare models and request delivery
-        or a quotation.
-      </p>
-      <div className="shop-tools">
-        <input
-          value={query}
-          onChange={(event) => update("q", event.target.value)}
-          placeholder="Search brand, model or product"
-          aria-label="Search catalogue"
-        />
-        <select
-          value={category}
-          onChange={(event) => update("category", event.target.value)}
-          aria-label="Filter products by category"
-        >
-          <option value="">All categories</option>
-          {categories.map((item) => (
-            <option key={item.id} value={item.slug}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <p className="shop-summary">
-        {products.length} product{products.length === 1 ? "" : "s"} found
-      </p>
-      <div className="cards">
+    <main className="page catalogue-page">
+      <header className="catalogue-intro">
+        <div>
+          <span className="eyebrow">MacroByte catalogue</span>
+          <h1>Find the right technology.</h1>
+          <p>Search stocked products, compare practical options, and request a quotation when you are ready.</p>
+        </div>
+        <div className="catalogue-intro-stats" aria-label="Catalogue summary">
+          <strong>{allProducts.length}</strong><span>Listed products</span>
+          <strong>{categories.length}</strong><span>Categories</span>
+        </div>
+      </header>
+      <section className="catalogue-controls" aria-label="Filter products">
+        <div className="catalogue-search">
+          <label htmlFor="catalogue-search">Search catalogue</label>
+          <input id="catalogue-search" value={query} onChange={(event) => update("q", event.target.value)} placeholder="Search products, brands or models" />
+        </div>
+        <div className="catalogue-filter-grid">
+          <label>Category<select value={category} onChange={(event) => update("category", event.target.value)}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
+          <label>Brand<select value={brand} onChange={(event) => update("brand", event.target.value)}><option value="">All brands</option>{brands.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+          <label>Minimum price<input type="number" min="0" value={minPrice} onChange={(event) => update("minPrice", event.target.value)} placeholder="Any" /></label>
+          <label>Maximum price<input type="number" min="0" value={maxPrice} onChange={(event) => update("maxPrice", event.target.value)} placeholder="Any" /></label>
+          <label>Availability<select value={availability} onChange={(event) => update("availability", event.target.value)}><option value="">All products</option><option value="in-stock">In stock</option></select></label>
+          <label>Sort by<select value={sort} onChange={(event) => update("sort", event.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></label>
+        </div>
+        <div className="catalogue-results"><p><strong>{products.length}</strong> product{products.length === 1 ? "" : "s"} found</p>{(query || category || brand || minPrice || maxPrice || availability || sort !== "featured") && <button type="button" onClick={clearFilters}>Clear filters</button>}</div>
+      </section>
+      <div className="cards catalogue-cards">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} add={add} />
         ))}
+        {!products.length && <div className="catalogue-empty"><h2>No products match these filters.</h2><p>Try clearing a filter or searching a different product name.</p><button type="button" onClick={clearFilters}>Show all products</button></div>}
       </div>
     </main>
   );
@@ -691,10 +715,9 @@ function Shop() {
 function Categories() {
   const { products, categories } = useCatalogue();
   return (
-    <main className="page">
-      <span className="eyebrow">Product catalogue</span>
-      <h1>Browse products by category.</h1>
-      <div className="cards">
+    <main className="page catalogue-page">
+      <header className="catalogue-intro catalogue-directory-intro"><div><span className="eyebrow">Product catalogue</span><h1>Browse by category.</h1><p>Explore product groups built for home, office, and growing businesses.</p></div><Link className="button" to="/shop">Browse all products</Link></header>
+      <div className="cards catalogue-cards category-directory">
         {categories.map((category) => (
           <article className="category-card" key={category.id}>
             <img src={imageFor(category)} alt={category.name} />
@@ -710,6 +733,20 @@ function Categories() {
             </div>
           </article>
         ))}
+      </div>
+    </main>
+  );
+}
+
+function Brands() {
+  const { products } = useCatalogue();
+  const brands = useMemo(() => Array.from(new Set(products.map((product) => product.brand).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [products]);
+  return (
+    <main className="page catalogue-page">
+      <header className="catalogue-intro catalogue-directory-intro"><div><span className="eyebrow">Product catalogue</span><h1>Shop trusted brands.</h1><p>Browse the brands currently available through MacroByte Trade.</p></div><Link className="button" to="/shop">Browse all products</Link></header>
+      <div className="brand-directory">
+        {brands.map((brand) => { const count = products.filter((product) => product.brand === brand).length; return <Link key={brand} to={`/shop?brand=${encodeURIComponent(brand)}`}><strong>{brand}</strong><span>{count} product{count === 1 ? "" : "s"}</span><b>View products →</b></Link>; })}
+        {!brands.length && <div className="catalogue-empty"><h2>Brands are being prepared.</h2><p>Please browse the full product catalogue in the meantime.</p><Link to="/shop">Browse products</Link></div>}
       </div>
     </main>
   );
@@ -1227,6 +1264,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/products" element={<Categories />} />
+          <Route path="/brands" element={<Brands />} />
           <Route path="/product/:slug" element={<Product />} />
           <Route path="/services" element={<Services />} />
           <Route path="/about" element={<About />} />

@@ -164,6 +164,7 @@ api.get('/api/health', async (_q,res)=>{ try { await getDb(); res.json({ok:true,
 api.get('/api/site', async (_q,res)=> { res.json(publicSettings(await siteSettings())); });
 api.get('/api/services', async (_q,res)=> { const d=await getDb(); res.json((await d.collection('services').find({active:true}).sort({order:1}).toArray()).map(clean)); });
 api.get('/api/categories', async (_q,res)=> { const d=await getDb(); res.json((await d.collection('categories').find({active:true}).sort({order:1,name:1}).toArray()).map(clean)); });
+api.get('/api/brands', async (_q,res)=> { const d=await getDb(); res.json((await d.collection('brands').find({active:true}).sort({name:1}).toArray()).map(clean)); });
 api.get('/api/products', async (req,res)=> {
   const d=await getDb(); const query={active:true};
   if(req.query.category){const category=await d.collection('categories').findOne({slug:req.query.category,active:true});query.category=category?.name||req.query.category;}

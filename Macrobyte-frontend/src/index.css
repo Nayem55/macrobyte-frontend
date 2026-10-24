@@ -2253,3 +2253,225 @@ textarea {
     animation: none;
   }
 }
+
+.catalogue-page {
+  padding-top: 68px;
+}
+.catalogue-intro {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 0 0 38px;
+}
+.catalogue-intro > div:first-child {
+  max-width: 700px;
+}
+.catalogue-intro h1 {
+  max-width: 620px;
+  margin: 8px 0 14px;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+.catalogue-intro p {
+  max-width: 590px;
+  margin: 0;
+  color: #52627f;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+.catalogue-intro-stats {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 26px;
+  row-gap: 2px;
+  min-width: 205px;
+  padding: 16px 0 4px 22px;
+  border-left: 3px solid #f05232;
+}
+.catalogue-intro-stats strong {
+  color: #17275c;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+.catalogue-intro-stats span {
+  color: #62708a;
+  font-size: 0.78rem;
+}
+.catalogue-controls {
+  margin-bottom: 34px;
+  padding: clamp(20px, 3vw, 32px);
+  background: #eaf0fb;
+}
+.catalogue-search label,
+.catalogue-filter-grid label {
+  display: grid;
+  gap: 7px;
+  color: #334363;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.catalogue-search input,
+.catalogue-filter-grid input,
+.catalogue-filter-grid select {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  color: #172238;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+.catalogue-search input {
+  min-height: 58px;
+  font-size: 1rem;
+}
+.catalogue-search input:focus,
+.catalogue-filter-grid input:focus,
+.catalogue-filter-grid select:focus {
+  outline-color: #f05232;
+}
+.catalogue-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.catalogue-results {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 22px;
+}
+.catalogue-results p {
+  margin: 0;
+  color: #52627f;
+}
+.catalogue-results strong {
+  color: #17275c;
+}
+.catalogue-results button,
+.catalogue-empty button,
+.catalogue-empty a {
+  padding: 0;
+  color: #e3482b;
+  border: 0;
+  background: transparent;
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.catalogue-cards {
+  align-items: stretch;
+}
+.catalogue-empty {
+  grid-column: 1 / -1;
+  padding: 46px 0;
+  background: #eaf0fb;
+  text-align: center;
+}
+.catalogue-empty h2 {
+  margin: 0 0 8px;
+  color: #17275c;
+}
+.catalogue-empty p {
+  margin: 0 0 14px;
+  color: #52627f;
+}
+.catalogue-directory-intro {
+  align-items: center;
+}
+.category-directory .category-card {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.category-directory .category-card > div {
+  padding: 20px 0 0;
+}
+.category-directory .category-card img {
+  height: 215px;
+}
+.brand-directory {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+  background: #d9e2f2;
+}
+.brand-directory > a {
+  display: grid;
+  min-height: 174px;
+  padding: 24px;
+  align-content: space-between;
+  color: #17275c;
+  background: #fff;
+  text-decoration: none;
+  transition: color 160ms ease, background 160ms ease;
+}
+.brand-directory > a:hover,
+.brand-directory > a:focus-visible {
+  color: #e3482b;
+  background: #fff4f1;
+}
+.brand-directory strong {
+  max-width: 13ch;
+  font-size: 1.35rem;
+  line-height: 1.12;
+}
+.brand-directory span {
+  color: #62708a;
+  font-size: 0.88rem;
+}
+.brand-directory b {
+  font-size: 0.82rem;
+}
+@media (max-width: 900px) {
+  .catalogue-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .brand-directory {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .catalogue-page {
+    padding-top: 40px;
+  }
+  .catalogue-intro {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 22px;
+    padding-bottom: 28px;
+  }
+  .catalogue-intro h1 {
+    font-size: clamp(2.3rem, 12vw, 3.25rem);
+  }
+  .catalogue-intro-stats {
+    width: 100%;
+  }
+  .catalogue-controls {
+    margin-right: -18px;
+    margin-left: -18px;
+    padding: 20px 18px;
+  }
+  .catalogue-filter-grid {
+    grid-template-columns: 1fr;
+  }
+  .catalogue-results {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .brand-directory {
+    grid-template-columns: 1fr;
+  }
+  .brand-directory > a {
+    min-height: 138px;
+  }
+}
