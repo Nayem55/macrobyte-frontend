@@ -465,31 +465,64 @@ textarea {
   flex-direction: column;
   padding: 18px !important;
 }
-.product-card-body > p:not(.eyebrow) {
-  margin: 0;
-  color: #596884;
-  font-size: 0.88rem;
-  line-height: 1.55;
+.product-card-body .eyebrow {
+  margin: 0 0 10px;
 }
 .product-card strong {
   display: block;
-  margin: 12px 0;
+  margin: 2px 0 0;
   color: #17275c;
+  font-size: 1.02rem;
 }
 .card-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
-  gap: 16px;
+  gap: 9px;
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 20px;
+}
+.card-actions a,
+.card-actions button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+.card-actions a {
+  color: #17275c;
+  border: 1px solid #ccd7e9;
+  background: #fff;
+}
+.card-actions a:hover,
+.card-actions a:focus-visible {
+  color: #17275c;
+  border-color: #9eb2d2;
+  background: #f6f8fd;
 }
 .card-actions button {
-  padding: 0;
   border: 0;
-  background: none;
-  color: #e94b2e;
+  color: #fff;
+  background: linear-gradient(135deg, #f56545, #ed4126);
+  box-shadow: 0 7px 14px rgba(237, 65, 38, 0.18);
   font-weight: 800;
   cursor: pointer;
+}
+.card-actions button:hover,
+.card-actions button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(237, 65, 38, 0.25);
 }
 .product-detail {
   display: grid;

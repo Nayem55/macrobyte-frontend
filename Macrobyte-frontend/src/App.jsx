@@ -224,14 +224,9 @@ function ProductCard({ product, add }) {
       <div className="product-card-body">
         <p className="eyebrow">{product.category}</p>
         <h2>{product.name}</h2>
-        <p>
-          {product.description ||
-            product.model ||
-            "Contact us for specifications and availability."}
-        </p>
         <strong>{price(product.price)}</strong>
         <div className="card-actions">
-          <Link to={`/product/${product.id}`}>View details</Link>
+          <Link to={`/product/${product.id}`}>View product</Link>
           {add && (
             <button type="button" onClick={() => add(product)}>
               Add to cart
