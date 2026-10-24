@@ -465,6 +465,8 @@ function Product() {
   const { slug } = useParams();
   const [product, setProduct] = useState(undefined);
   const [related, setRelated] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [reviewMessage, setReviewMessage] = useState("");
   useEffect(() => {
     api("/products")
       .then((items) => {
@@ -485,6 +487,12 @@ function Product() {
       })
       .catch(() => setProduct(null));
   }, [slug]);
+  useEffect(() => {
+    if (!product?.id) return;
+    api(`/reviews?productId=${encodeURIComponent(product.id)}`)
+      .then(setReviews)
+      .catch(() => setReviews([]));
+  }, [product?.id]);
   if (product === undefined)
     return (
       <main className="page">
@@ -510,6 +518,29 @@ function Product() {
           )
         : [...items, { ...target, quantity: 1 }],
     );
+  };
+  const submitReview = async (event) => {
+    event.preventDefault();
+    setReviewMessage("");
+    const body = Object.fromEntries(new FormData(event.currentTarget));
+    try {
+      const response = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...body,
+          productId: product.id,
+          productName: product.name,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result.message || "Unable to submit your review.");
+      setReviewMessage(result.message);
+      event.currentTarget.reset();
+    } catch (error) {
+      setReviewMessage(error.message);
+    }
   };
   return (
     <main className="page product-page">
@@ -578,13 +609,59 @@ function Product() {
         </div>
       </section>
       <section className="product-reviews">
-        <div>
+        <div className="review-list">
           <span className="eyebrow">Customer feedback</span>
           <h2>Reviews for this product</h2>
+          {reviews.length ? (
+            <div className="review-items">
+              {reviews.map((review) => (
+                <article key={review.id}>
+                  <div>
+                    <strong>{review.name}</strong>
+                    <span aria-label={`${review.rating} out of 5 stars`}>
+                      {"★".repeat(review.rating)}
+                      {"☆".repeat(5 - review.rating)}
+                    </span>
+                  </div>
+                  <p>{review.comment}</p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="no-reviews">
+              No approved reviews yet. Be the first to share your experience.
+            </p>
+          )}
         </div>
-        <p>
-          Customer reviews will appear here as verified orders are completed.
-        </p>
+        <form className="review-form" onSubmit={submitReview}>
+          <h2>Write a review</h2>
+          <label>
+            Your name
+            <input name="name" minLength="2" maxLength="80" required />
+          </label>
+          <label>
+            Your rating
+            <select name="rating" defaultValue="5" required>
+              <option value="5">5 — Excellent</option>
+              <option value="4">4 — Good</option>
+              <option value="3">3 — Average</option>
+              <option value="2">2 — Fair</option>
+              <option value="1">1 — Poor</option>
+            </select>
+          </label>
+          <label>
+            Your review
+            <textarea
+              name="comment"
+              minLength="10"
+              maxLength="1500"
+              rows="4"
+              required
+            />
+          </label>
+          <button type="submit">Submit review</button>
+          {reviewMessage && <p className="review-message">{reviewMessage}</p>}
+        </form>
       </section>
       {related.length > 0 && (
         <section className="related-products">

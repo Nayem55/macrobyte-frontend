@@ -676,17 +676,95 @@ textarea {
   line-height: 1.6;
 }
 .product-reviews {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 30px;
-  padding: 25px 28px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.72fr);
+  gap: clamp(26px, 5vw, 62px);
+  padding: clamp(24px, 4vw, 40px);
   border-radius: 16px;
   background: #edf2fb;
 }
-.product-reviews p {
-  max-width: 430px;
+.review-list .eyebrow {
+  margin: 0 0 9px;
+}
+.no-reviews {
+  margin: 15px 0 0;
+}
+.review-items {
+  display: grid;
+  gap: 10px;
+  margin-top: 17px;
+}
+.review-items article {
+  padding: 14px;
+  border: 1px solid #d9e2f1;
+  border-radius: 11px;
+  background: #fff;
+}
+.review-items article > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.review-items strong {
+  color: #17275c;
+  font-size: 0.85rem;
+}
+.review-items span {
+  color: #f05232;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+}
+.review-items p {
+  margin: 8px 0 0;
+}
+.review-form {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid #d9e2f1;
+  border-radius: 14px;
+  background: #fff;
+}
+.review-form h2 {
+  margin-bottom: 3px;
+}
+.review-form label {
+  display: grid;
+  gap: 6px;
+  color: #273960;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.review-form input,
+.review-form select,
+.review-form textarea {
+  width: 100%;
+  padding: 10px 11px;
+  color: #172238;
+  border: 1px solid #cdd8e9;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+}
+.review-form textarea {
+  resize: vertical;
+}
+.review-form button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 9px;
+  color: #fff;
+  background: linear-gradient(135deg, #f56545, #ed4126);
+  box-shadow: 0 7px 14px rgba(237, 65, 38, 0.17);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.review-message {
   margin: 0;
+  color: #176546 !important;
+  font-size: 0.78rem !important;
+  font-weight: 700;
 }
 .related-products {
   margin-top: 58px;
@@ -1006,6 +1084,9 @@ textarea {
   .product-reviews {
     align-items: flex-start;
     flex-direction: column;
+  }
+  .product-reviews {
+    grid-template-columns: 1fr;
   }
   .product-confidence {
     margin: 35px 0;
