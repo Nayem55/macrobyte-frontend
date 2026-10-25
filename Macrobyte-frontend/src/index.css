@@ -1788,6 +1788,8 @@ textarea {
     z-index: 3;
   }
   .mb-header.open .mb-nav {
+    display: flex;
+    align-content: flex-start;
     transform: translateX(0);
     visibility: visible;
     pointer-events: auto;
@@ -1797,6 +1799,8 @@ textarea {
     flex: 0 0 auto;
     width: 100%;
     height: auto;
+    min-height: 0;
+    padding: 0 10px;
     margin: 0 0 18px;
     flex-direction: column;
     align-items: flex-start;
@@ -1811,11 +1815,11 @@ textarea {
   .mb-drawer-brand > span {
     display: block;
     color: #64708a;
-    font-size: 0.56rem;
-    font-weight: 800;
-    letter-spacing: 0.16em;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0;
     line-height: 1.35;
-    text-transform: uppercase;
+    text-transform: none;
   }
   .mb-drawer-backdrop {
     position: fixed;
@@ -1842,12 +1846,13 @@ textarea {
   .mb-nav > .mb-drawer-link,
   .mb-category > button {
     width: 100%;
-    min-height: 60px;
+    min-height: 52px;
     padding: 8px 10px;
     align-items: center;
     color: #17275c;
-    font-size: 1rem;
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
     text-align: left;
   }
   .mb-nav > .mb-drawer-link,
@@ -1860,10 +1865,10 @@ textarea {
   }
   .mb-nav > .mb-drawer-link {
     display: grid;
-    grid-template-columns: 42px minmax(0, 1fr) auto;
+    grid-template-columns: 24px minmax(0, 1fr) auto;
     gap: 12px;
-    border-bottom: 1px solid #e7edf7;
-    border-radius: 0;
+    border: 0;
+    border-radius: 8px;
   }
   .mb-nav > .mb-drawer-link:hover,
   .mb-nav > .mb-drawer-link:focus-visible {
@@ -1876,16 +1881,16 @@ textarea {
   }
   .mb-drawer-icon {
     display: grid;
-    width: 42px;
-    height: 42px;
+    width: 24px;
+    height: 24px;
     place-items: center;
     color: #112d74;
     border-radius: 12px;
-    background: #edf4ff;
+    background: transparent;
   }
   .mb-drawer-icon svg {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     fill: none;
     stroke: currentColor;
     stroke-linecap: round;
@@ -1901,14 +1906,15 @@ textarea {
   }
   .mb-category {
     display: block;
+    min-height: 0;
   }
   .mb-category > button {
     display: grid;
-    grid-template-columns: 42px minmax(0, 1fr) auto;
+    grid-template-columns: 24px minmax(0, 1fr) auto;
     gap: 12px;
     justify-content: initial;
     border-radius: 12px;
-    background: #edf4ff;
+    background: transparent;
   }
   .mb-category.open > button {
     color: #123c9b;
@@ -1919,13 +1925,14 @@ textarea {
     height: 9px;
     margin: -4px 4px 0 0;
     border-width: 0 2px 2px 0;
-    color: #1264e8;
+    color: #52627f;
   }
   .mb-dropdown {
     position: static;
     display: grid;
     width: auto;
     max-height: 0;
+    visibility: hidden;
     margin: 0;
     padding: 0 10px 0 25px;
     overflow: hidden;
@@ -1939,6 +1946,8 @@ textarea {
   .mb-category.open .mb-dropdown {
     display: grid;
     max-height: 72dvh;
+    visibility: visible;
+    overflow-y: auto;
     margin: 0 0 12px;
     padding: 8px 10px 10px 25px;
   }
@@ -2016,6 +2025,7 @@ textarea {
     position: static;
     display: grid;
     grid-template-rows: 0fr;
+    visibility: hidden;
     width: auto;
     margin: 0;
     padding: 0;
@@ -2025,6 +2035,7 @@ textarea {
   }
   .mb-category-group.expanded .mb-subcategory-menu {
     grid-template-rows: 1fr;
+    visibility: visible;
   }
   .mb-subcategory-links {
     min-height: 0;

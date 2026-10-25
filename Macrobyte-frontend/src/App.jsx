@@ -118,7 +118,7 @@ function Header() {
   const setCategoryHover = (visible) => {
     // Touch browsers can fire a synthetic mouseenter before the tap. Limiting
     // hover behavior to a genuine fine pointer keeps the first tap reliable.
-    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    if (window.matchMedia("(min-width: 701px) and (hover: hover) and (pointer: fine)").matches) {
       setCategoryOpen(visible);
     }
   };
@@ -293,9 +293,13 @@ function Header() {
         <button
           className="mb-menu"
           type="button"
-          aria-label="Toggle navigation"
+          aria-label={open ? "Close navigation" : "Open navigation"}
           aria-expanded={open}
-          onClick={() => setOpen((value) => !value)}
+          onClick={() => {
+            setCategoryOpen(false);
+            setExpandedCategory(null);
+            setOpen((value) => !value);
+          }}
         >
           <span />
           <span />
