@@ -64,6 +64,9 @@ function Header() {
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [headerProducts, setHeaderProducts] = useState([]);
+  const [headerQuery, setHeaderQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const [cartCount, setCartCount] = useState(() =>
     readCart().reduce(
       (total, item) => total + Math.max(Number(item.quantity) || 1, 1),
@@ -74,6 +77,11 @@ function Header() {
     api("/category-menu")
       .then(setCategories)
       .catch(() => setCategories([]));
+  }, []);
+  useEffect(() => {
+    api("/products")
+      .then(setHeaderProducts)
+      .catch(() => setHeaderProducts([]));
   }, []);
   useEffect(() => {
     if (!open) return undefined;
@@ -116,11 +124,23 @@ function Header() {
   };
   const search = (event) => {
     event.preventDefault();
-    const query = new FormData(event.currentTarget).get("q")?.trim();
+    const query = headerQuery.trim();
     navigate(query ? `/shop?q=${encodeURIComponent(query)}` : "/shop");
-    event.currentTarget.reset();
+    setHeaderQuery("");
+    setSearchFocused(false);
     close();
   };
+  const headerSuggestions = useMemo(() => {
+    const term = headerQuery.trim().toLowerCase();
+    if (!term) return [];
+    return headerProducts
+      .filter((product) =>
+        `${product.name || ""} ${product.brand || ""} ${product.model || ""} ${product.category || ""}`
+          .toLowerCase()
+          .includes(term),
+      )
+      .slice(0, 5);
+  }, [headerProducts, headerQuery]);
   return (
     <header className={`mb-header${open ? " open" : ""}`}>
       <div className="mb-header-inner">
@@ -228,7 +248,29 @@ function Header() {
               name="q"
               aria-label="Search products"
               placeholder="Search products..."
+              value={headerQuery}
+              onChange={(event) => setHeaderQuery(event.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => window.setTimeout(() => setSearchFocused(false), 150)}
             />
+            {searchFocused && headerQuery.trim() && (
+              <div className="header-search-suggestions" role="listbox" aria-label="Product suggestions">
+                {headerSuggestions.length ? (
+                  <>
+                    <p>Suggested products</p>
+                    {headerSuggestions.map((product) => (
+                      <Link key={product.id} to={productPath(product)} role="option" onClick={() => { setHeaderQuery(""); setSearchFocused(false); }}>
+                        <img src={imageFor(product)} alt="" />
+                        <span><strong>{product.name}</strong><small>{product.category || product.brand || "Product"} · {price(product.price)}</small></span>
+                      </Link>
+                    ))}
+                  </>
+                ) : (
+                  <p className="header-search-empty">No matching products found.</p>
+                )}
+                <button type="submit">View all results for “{headerQuery.trim()}” <span>→</span></button>
+              </div>
+            )}
           </form>
           <Link
             className="mb-cart"
