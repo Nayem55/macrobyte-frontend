@@ -1,0 +1,31 @@
+/* Product catalogue: keep the working area dense and readable on desktop. */
+.content {
+  width: 100%;
+  max-width: none;
+  padding: 24px 34px;
+}
+
+.top {
+  margin-bottom: 12px;
+}
+
+.admin-filters {
+  grid-template-columns: minmax(300px, 1.45fr) minmax(210px, 0.55fr) minmax(210px, 0.55fr);
+  margin: 16px 0 6px;
+}
+
+#product-filter-count {
+  margin: 0 0 14px;
+}
+
+@media (max-width: 900px) {
+  .content { padding: 24px; }
+  .admin-filters { grid-template-columns: 1fr 1fr; }
+  .admin-filters input { grid-column: 1 / -1; }
+}
+
+@media (max-width: 760px) {
+  .content { padding: 20px; }
+  .admin-filters { grid-template-columns: 1fr; }
+  .admin-filters input { grid-column: auto; }
+}

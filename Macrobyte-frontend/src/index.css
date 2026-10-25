@@ -118,8 +118,8 @@ textarea {
   top: calc(100% - 6px);
   left: 50%;
   width: 270px;
-  max-height: min(560px, calc(100vh - 100px));
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
   padding: 8px;
   transform: translateX(-50%);
   border: 1px solid #e0e6f1;
@@ -159,8 +159,8 @@ textarea {
   left: calc(100% + 8px);
   display: none;
   width: 230px;
-  max-height: min(560px, calc(100vh - 100px));
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
   padding: 8px;
   border: 1px solid #e0e6f1;
   border-radius: 14px;
