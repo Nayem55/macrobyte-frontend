@@ -50,6 +50,7 @@ function Header() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState(null);
   const [categories, setCategories] = useState([]);
   const [cartCount, setCartCount] = useState(() =>
     readCart().reduce(
@@ -92,6 +93,7 @@ function Header() {
   const close = () => {
     setOpen(false);
     setCategoryOpen(false);
+    setExpandedCategory(null);
   };
   const search = (event) => {
     event.preventDefault();
@@ -125,38 +127,65 @@ function Header() {
               type="button"
               aria-haspopup="true"
               aria-expanded={categoryOpen}
-              onClick={() => setCategoryOpen(true)}
+              onClick={() => setCategoryOpen((value) => !value)}
             >
               <span className="mb-category-label">Categories</span>
+              <span className="mb-category-arrow" aria-hidden="true" />
             </button>
             <div className="mb-dropdown">
               <Link to="/products" onClick={close}>
                 All categories
               </Link>
-              {categories.map((category) => (
-                <div className="mb-category-group" key={category.id}>
-                  <Link
-                    className="mb-parent-category"
-                    to={`/shop?category=${encodeURIComponent(category.slug)}`}
-                    onClick={close}
+              {categories.map((category) => {
+                const hasSubcategories = category.subcategories?.length > 0;
+                const expanded = expandedCategory === category.id;
+                return (
+                  <div
+                    className={`mb-category-group${expanded ? " expanded" : ""}`}
+                    key={category.id}
                   >
-                    {category.name}
-                  </Link>
-                  {category.subcategories?.length > 0 && (
-                    <div className="mb-subcategory-menu">
-                      {category.subcategories.map((subcategory) => (
-                        <Link
-                          key={subcategory.id}
-                          to={`/shop?category=${encodeURIComponent(category.slug)}&subcategory=${encodeURIComponent(subcategory.slug)}`}
-                          onClick={close}
+                    <div className="mb-category-group-head">
+                      <Link
+                        className="mb-parent-category"
+                        to={`/shop?category=${encodeURIComponent(category.slug)}`}
+                        onClick={close}
+                      >
+                        {category.name}
+                      </Link>
+                      {hasSubcategories && (
+                        <button
+                          className="mb-subcategory-toggle"
+                          type="button"
+                          aria-label={`Toggle ${category.name} subcategories`}
+                          aria-expanded={expanded}
+                          onClick={() =>
+                            setExpandedCategory((value) =>
+                              value === category.id ? null : category.id,
+                            )
+                          }
                         >
-                          {subcategory.name}
-                        </Link>
-                      ))}
+                          <span aria-hidden="true" />
+                        </button>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                    {hasSubcategories && (
+                      <div className="mb-subcategory-menu">
+                        <div className="mb-subcategory-links">
+                          {category.subcategories.map((subcategory) => (
+                            <Link
+                              key={subcategory.id}
+                              to={`/shop?category=${encodeURIComponent(category.slug)}&subcategory=${encodeURIComponent(subcategory.slug)}`}
+                              onClick={close}
+                            >
+                              {subcategory.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
           <Link to="/brands" onClick={close}>
