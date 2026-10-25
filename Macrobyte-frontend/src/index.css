@@ -2661,6 +2661,9 @@ textarea {
   font-size: 0.88rem;
   line-height: 1.55;
 }
+.catalogue-filter-toggle {
+  display: none;
+}
 .catalogue-layout .catalogue-search {
   padding: 14px;
   background: #f3f6fc;
@@ -2906,10 +2909,90 @@ textarea {
   .catalogue-layout .catalogue-controls {
     position: static;
     margin: 0 -18px 28px;
-    padding: 22px 18px;
+    padding: 0;
     border-right: 0;
     border-left: 0;
     border-radius: 0;
+    border-top: 0;
+    background: #fff;
+  }
+  .catalogue-layout .catalogue-filter-heading {
+    display: flex;
+    min-height: 70px;
+    margin: 0;
+    padding: 13px 18px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .catalogue-layout .catalogue-filter-heading h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .catalogue-layout .catalogue-filter-heading p {
+    display: none;
+  }
+  .catalogue-filter-toggle {
+    display: inline-flex;
+    min-height: 42px;
+    padding: 0 12px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    color: #17275c;
+    border: 1px solid #d5e0f0;
+    border-radius: 8px;
+    background: #f6f9fe;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .catalogue-filter-toggle b {
+    display: grid;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    place-items: center;
+    color: #fff;
+    border-radius: 50%;
+    background: #f05232;
+    font-size: 0.68rem;
+  }
+  .catalogue-filter-toggle i {
+    width: 7px;
+    height: 7px;
+    margin: -3px 0 0 2px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 180ms ease;
+  }
+  .catalogue-controls.is-open .catalogue-filter-toggle i {
+    margin-top: 3px;
+    transform: rotate(225deg);
+  }
+  .catalogue-filter-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    background: #f4f7fc;
+    transition: grid-template-rows 240ms ease;
+  }
+  .catalogue-controls.is-open .catalogue-filter-content {
+    grid-template-rows: 1fr;
+  }
+  .catalogue-filter-content-inner {
+    min-height: 0;
+    overflow: hidden;
+    padding: 0 18px;
+    opacity: 0;
+    transition: opacity 160ms ease;
+  }
+  .catalogue-controls.is-open .catalogue-filter-content-inner {
+    padding-top: 18px;
+    padding-bottom: 22px;
+    opacity: 1;
   }
   .catalogue-layout .catalogue-filter-grid {
     grid-template-columns: 1fr;

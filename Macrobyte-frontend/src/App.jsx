@@ -699,6 +699,7 @@ function Shop() {
   const [categories, setCategories] = useState([]);
   const [subcategoryMenu, setSubcategoryMenu] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const category = searchParams.get("category") || "";
@@ -775,6 +776,16 @@ function Shop() {
     );
   };
   const clearFilters = () => setSearchParams({}, { replace: true });
+  const activeFilterCount = [
+    query,
+    category,
+    subcategory,
+    brand,
+    minPrice,
+    maxPrice,
+    availability,
+    sort !== "featured" ? sort : "",
+  ].filter(Boolean).length;
   if (loading) return <PageLoader label="Loading product catalogue" />;
   return (
     <main className="page catalogue-page">
@@ -790,22 +801,31 @@ function Shop() {
         </div>
       </header>
       <div className="catalogue-layout">
-        <aside className="catalogue-controls" aria-label="Filter products">
-          <div className="catalogue-filter-heading"><h2>Filter products</h2><p>Refine the catalogue to match your requirement.</p></div>
-          <div className="catalogue-search">
-            <label htmlFor="catalogue-search">Search catalogue</label>
-            <input id="catalogue-search" value={query} onChange={(event) => update("q", event.target.value)} placeholder="Search products, brands or models" />
+        <aside className={`catalogue-controls${filtersOpen ? " is-open" : ""}`} aria-label="Filter products">
+          <div className="catalogue-filter-heading">
+            <div><h2>Filter products</h2><p>Refine the catalogue to match your requirement.</p></div>
+            <button className="catalogue-filter-toggle" type="button" aria-expanded={filtersOpen} aria-controls="catalogue-filter-content" onClick={() => setFiltersOpen((value) => !value)}>
+              <span>Filters</span>{activeFilterCount > 0 && <b>{activeFilterCount}</b>}<i aria-hidden="true" />
+            </button>
           </div>
-          <div className="catalogue-filter-grid">
-            <label>Category<select value={category} onChange={(event) => update("category", event.target.value)}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
-            <label>Subcategory<select value={subcategory} onChange={(event) => update("subcategory", event.target.value)}><option value="">All subcategories</option>{subcategoryMenu.find((item) => item.slug === category)?.subcategories?.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>) || subcategoryMenu.flatMap((item) => item.subcategories || []).map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
-            <label>Brand<select value={brand} onChange={(event) => update("brand", event.target.value)}><option value="">All brands</option>{brands.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
-            <label>Minimum price<input type="number" min="0" value={minPrice} onChange={(event) => update("minPrice", event.target.value)} placeholder="Any" /></label>
-            <label>Maximum price<input type="number" min="0" value={maxPrice} onChange={(event) => update("maxPrice", event.target.value)} placeholder="Any" /></label>
-            <label>Availability<select value={availability} onChange={(event) => update("availability", event.target.value)}><option value="">All products</option><option value="in-stock">In stock</option></select></label>
-            <label>Sort by<select value={sort} onChange={(event) => update("sort", event.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></label>
+          <div className="catalogue-filter-content" id="catalogue-filter-content">
+            <div className="catalogue-filter-content-inner">
+              <div className="catalogue-search">
+                <label htmlFor="catalogue-search">Search catalogue</label>
+                <input id="catalogue-search" value={query} onChange={(event) => update("q", event.target.value)} placeholder="Search products, brands or models" />
+              </div>
+              <div className="catalogue-filter-grid">
+                <label>Category<select value={category} onChange={(event) => update("category", event.target.value)}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
+                <label>Subcategory<select value={subcategory} onChange={(event) => update("subcategory", event.target.value)}><option value="">All subcategories</option>{subcategoryMenu.find((item) => item.slug === category)?.subcategories?.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>) || subcategoryMenu.flatMap((item) => item.subcategories || []).map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
+                <label>Brand<select value={brand} onChange={(event) => update("brand", event.target.value)}><option value="">All brands</option>{brands.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+                <label>Minimum price<input type="number" min="0" value={minPrice} onChange={(event) => update("minPrice", event.target.value)} placeholder="Any" /></label>
+                <label>Maximum price<input type="number" min="0" value={maxPrice} onChange={(event) => update("maxPrice", event.target.value)} placeholder="Any" /></label>
+                <label>Availability<select value={availability} onChange={(event) => update("availability", event.target.value)}><option value="">All products</option><option value="in-stock">In stock</option></select></label>
+                <label>Sort by<select value={sort} onChange={(event) => update("sort", event.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></label>
+              </div>
+              {(query || category || subcategory || brand || minPrice || maxPrice || availability || sort !== "featured") && <button className="catalogue-clear" type="button" onClick={clearFilters}>Clear all filters</button>}
+            </div>
           </div>
-          {(query || category || subcategory || brand || minPrice || maxPrice || availability || sort !== "featured") && <button className="catalogue-clear" type="button" onClick={clearFilters}>Clear all filters</button>}
         </aside>
         <section className="catalogue-products" aria-label="Product results">
           <div className="catalogue-results"><p><strong>{products.length}</strong> product{products.length === 1 ? "" : "s"} found</p><span>Stock and final pricing are confirmed before ordering.</span></div>
