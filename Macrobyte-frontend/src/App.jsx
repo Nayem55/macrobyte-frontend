@@ -107,6 +107,13 @@ function Header() {
     setCategoryOpen(false);
     setExpandedCategory(null);
   };
+  const setCategoryHover = (visible) => {
+    // Touch browsers can fire a synthetic mouseenter before the tap. Limiting
+    // hover behavior to a genuine fine pointer keeps the first tap reliable.
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      setCategoryOpen(visible);
+    }
+  };
   const search = (event) => {
     event.preventDefault();
     const query = new FormData(event.currentTarget).get("q")?.trim();
@@ -133,8 +140,8 @@ function Header() {
           </Link>
           <div
             className={`mb-category${categoryOpen ? " open" : ""}`}
-            onMouseEnter={() => setCategoryOpen(true)}
-            onMouseLeave={() => setCategoryOpen(false)}
+            onMouseEnter={() => setCategoryHover(true)}
+            onMouseLeave={() => setCategoryHover(false)}
           >
             <button
               type="button"
