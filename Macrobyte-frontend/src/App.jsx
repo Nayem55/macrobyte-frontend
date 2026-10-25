@@ -46,6 +46,18 @@ const writeCart = (items) => {
   window.dispatchEvent(new Event("mb-cart-updated"));
 };
 
+function DrawerIcon({ name }) {
+  const paths = {
+    services: <><circle cx="12" cy="12" r="3.1" /><path d="M12 2.8v2.1m0 14.2v2.1m9.2-9.2h-2.1M4.9 12H2.8m15.7-6.5-1.5 1.5M5 19l-1.5 1.5m15 0L17 19M5 5l-1.5-1.5" /></>,
+    shop: <><path d="M5 8.5h14l-1 11H6l-1-11Z" /><path d="M8.5 8.5a3.5 3.5 0 0 1 7 0" /></>,
+    categories: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
+    brands: <><path d="M3.5 12.2V5.5h6.7L20.5 15.8 14.1 22 3.5 12.2Z" /><circle cx="7.8" cy="8.7" r="1.2" /></>,
+    about: <><path d="M4 21h16M6.5 21V9.5h11V21M4.5 9.5h15L12 3 4.5 9.5ZM9 13h1m3 0h1m-5 4h1m3 0h1" /></>,
+    contact: <><path d="M5 3.5 8.6 3l2.1 5-2.4 2.1a15.2 15.2 0 0 0 5.7 5.7l2.1-2.4 5 2.1-.5 3.6c-.2 1.2-1.2 2-2.4 1.9C10.2 20.1 3.9 13.8 3.4 5.8 3.3 4.6 4 3.7 5 3.5Z" /></>,
+  };
+  return <span className="mb-drawer-icon" aria-hidden="true"><svg viewBox="0 0 24 24">{paths[name]}</svg></span>;
+}
+
 function Header() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -111,12 +123,13 @@ function Header() {
         <nav className="mb-nav" aria-label="Main navigation">
           <Link className="mb-drawer-brand" to="/" onClick={close}>
             <img src="/assets/macrobyte-logo.png" alt="MacroByte Trade" />
+            <span>Your trusted trade partner</span>
           </Link>
-          <Link to="/services" onClick={close}>
-            Services
+          <Link className="mb-drawer-link" to="/services" onClick={close}>
+            <DrawerIcon name="services" /><span>Services</span><b aria-hidden="true">›</b>
           </Link>
-          <Link to="/shop" onClick={close}>
-            Shop
+          <Link className="mb-drawer-link" to="/shop" onClick={close}>
+            <DrawerIcon name="shop" /><span>Shop</span><b aria-hidden="true">›</b>
           </Link>
           <div
             className={`mb-category${categoryOpen ? " open" : ""}`}
@@ -129,7 +142,7 @@ function Header() {
               aria-expanded={categoryOpen}
               onClick={() => setCategoryOpen((value) => !value)}
             >
-              <span className="mb-category-label">Categories</span>
+              <DrawerIcon name="categories" /><span className="mb-category-label">Categories</span>
               <span className="mb-category-arrow" aria-hidden="true" />
             </button>
             <div className="mb-dropdown">
@@ -188,14 +201,14 @@ function Header() {
               })}
             </div>
           </div>
-          <Link to="/brands" onClick={close}>
-            Brands
+          <Link className="mb-drawer-link" to="/brands" onClick={close}>
+            <DrawerIcon name="brands" /><span>Brands</span><b aria-hidden="true">›</b>
           </Link>
-          <Link to="/about" onClick={close}>
-            About
+          <Link className="mb-drawer-link" to="/about" onClick={close}>
+            <DrawerIcon name="about" /><span>About</span><b aria-hidden="true">›</b>
           </Link>
-          <Link to="/contact" onClick={close}>
-            Contact
+          <Link className="mb-drawer-link" to="/contact" onClick={close}>
+            <DrawerIcon name="contact" /><span>Contact</span><b aria-hidden="true">›</b>
           </Link>
         </nav>
         <div className="mb-actions">
