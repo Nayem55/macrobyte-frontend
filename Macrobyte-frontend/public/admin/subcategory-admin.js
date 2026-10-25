@@ -64,10 +64,16 @@
     }
     if (workspace) workspace.innerHTML=`<p class="notice">${esc(error.message)}</p>`;
   };
-  setTimeout(()=>{
-    if (!localStorage.getItem('mb_token') || !content()) return;
+  let mountAttempts = 0;
+  const mountEnhancedCatalogue = () => {
+    if (!localStorage.getItem('mb_token')) return;
+    if (!content()) {
+      if (mountAttempts++ < 30) setTimeout(mountEnhancedCatalogue, 100);
+      return;
+    }
     attachNav();
     if(activePage==='products')renderProducts().catch(showError);
     if(activePage==='subcategories')renderSubcategories().catch(showError);
-  },150);
+  };
+  setTimeout(mountEnhancedCatalogue,150);
 })();
