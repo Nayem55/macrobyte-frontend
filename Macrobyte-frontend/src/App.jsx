@@ -63,6 +63,18 @@ function Header() {
       .catch(() => setCategories([]));
   }, []);
   useEffect(() => {
+    if (!open) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.body.classList.add("mobile-drawer-open");
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.classList.remove("mobile-drawer-open");
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+  useEffect(() => {
     const updateCartCount = () =>
       setCartCount(
         readCart().reduce(
@@ -95,6 +107,9 @@ function Header() {
           <img src="/assets/macrobyte-logo.png" alt="MacroByte Trade" />
         </Link>
         <nav className="mb-nav" aria-label="Main navigation">
+          <Link className="mb-drawer-brand" to="/" onClick={close}>
+            <img src="/assets/macrobyte-logo.png" alt="MacroByte Trade" />
+          </Link>
           <Link to="/services" onClick={close}>
             Services
           </Link>
@@ -196,6 +211,12 @@ function Header() {
           <span />
         </button>
       </div>
+      <button
+        className="mb-drawer-backdrop"
+        type="button"
+        aria-label="Close navigation"
+        onClick={close}
+      />
     </header>
   );
 }
