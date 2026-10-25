@@ -744,7 +744,8 @@ textarea {
 .product-gallery-stage {
   position: relative;
   display: grid;
-  min-height: 470px;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   place-items: center;
   border: 1px solid #dbe3f0;
@@ -753,9 +754,9 @@ textarea {
 }
 .product-gallery-stage > img {
   width: 100%;
-  height: clamp(380px, 44vw, 520px);
-  padding: clamp(18px, 3vw, 34px);
-  object-fit: contain;
+  height: 100%;
+  padding: 0;
+  object-fit: cover;
   animation: product-image-in 200ms ease-out;
 }
 .gallery-control {
@@ -2267,12 +2268,12 @@ textarea {
 
 @media (max-width: 700px) {
   .product-gallery-stage {
-    min-height: 330px;
+    min-height: 0;
     border-radius: 16px;
   }
   .product-gallery-stage > img {
-    height: 330px;
-    padding: 16px;
+    height: 100%;
+    padding: 0;
   }
   .gallery-control {
     width: 38px;
