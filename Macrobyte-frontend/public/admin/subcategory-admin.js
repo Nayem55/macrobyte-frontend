@@ -44,5 +44,19 @@
     const open=(item={})=>editor(`${item.id?'Edit':'Add'} subcategory`, `<div><label>Parent category<select name="parentCategory" required><option value="">Select a category</option>${categories.map((c)=>`<option value="${esc(c.name)}" ${c.name===item.parentCategory?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label></div><div><label>Subcategory name<input name="name" required value="${esc(item.name||'')}" placeholder="e.g. Keyboards"></label></div><div><label>Slug<input name="slug" value="${esc(item.slug||'')}"></label></div><div><label>Display order<input name="order" type="number" value="${esc(item.order||0)}"></label></div><div><label>Visible<select name="active"><option value="true" ${item.active!==false?'selected':''}>Yes</option><option value="false" ${item.active===false?'selected':''}>No</option></select></label></div><div class="full"><label>Description<textarea name="description">${esc(item.description||'')}</textarea></label></div>`, async (event)=>{event.preventDefault();try{const f=Object.fromEntries(new FormData(event.currentTarget));await api(`/admin/subcategories${item.id?`/${item.id}`:''}`,{method:item.id?'PUT':'POST',body:JSON.stringify({...f,order:Number(f.order||0),active:f.active==='true'})});renderSubcategories()}catch(error){alert(error.message)}});
     document.querySelector('#add-subcategory').onclick=()=>open();document.querySelectorAll('[data-edit]').forEach((button)=>button.onclick=()=>open(subcategories.find((item)=>item.id===button.dataset.edit)));document.querySelectorAll('[data-delete]').forEach((button)=>button.onclick=async()=>{if(confirm('Delete this subcategory?'))try{await api(`/admin/subcategories/${button.dataset.delete}`,{method:'DELETE'});renderSubcategories()}catch(error){alert(error.message)}});
   }
-  setTimeout(()=>{attachNav();if(activePage==='products')renderProducts().catch((error)=>content().innerHTML=`<p class="notice">${esc(error.message)}</p>`);if(activePage==='subcategories')renderSubcategories().catch((error)=>content().innerHTML=`<p class="notice">${esc(error.message)}</p>`);},150);
+  const showError = (error) => {
+    const workspace = content();
+    if (/sign in|token|jwt|authori[sz]/i.test(error.message)) {
+      localStorage.removeItem('mb_token');
+      if (workspace) location.reload();
+      return;
+    }
+    if (workspace) workspace.innerHTML=`<p class="notice">${esc(error.message)}</p>`;
+  };
+  setTimeout(()=>{
+    if (!localStorage.getItem('mb_token') || !content()) return;
+    attachNav();
+    if(activePage==='products')renderProducts().catch(showError);
+    if(activePage==='subcategories')renderSubcategories().catch(showError);
+  },150);
 })();
