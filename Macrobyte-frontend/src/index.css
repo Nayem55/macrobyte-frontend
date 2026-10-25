@@ -62,7 +62,7 @@ textarea {
   height: 76px;
   margin: 0;
 }
-.mb-drawer-brand,
+.mb-nav > .mb-drawer-brand,
 .mb-drawer-backdrop {
   display: none;
 }
@@ -1698,7 +1698,7 @@ textarea {
     visibility: visible;
     pointer-events: auto;
   }
-  .mb-drawer-brand {
+  .mb-nav > .mb-drawer-brand {
     display: flex;
     flex: 0 0 auto;
     width: 100%;
