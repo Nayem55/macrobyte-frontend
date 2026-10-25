@@ -19,6 +19,49 @@ const publicPort = Number(process.env.PORT || 1016);
 const adminPort = Number(process.env.ADMIN_PORT || 1017);
 let client, db;
 const slugify = value => String(value || '').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+const subCategoryFor = item => {
+  const value = `${item?.productType || ''} ${item?.name || ''}`.toLowerCase();
+  const category = String(item?.category || '');
+  if (category === 'Mobile Content Creation') {
+    if (/gimbal/.test(value)) return 'Gimbals';
+    if (/tripod|ring light/.test(value)) return 'Tripods & Ring Lights';
+    if (/selfie/.test(value)) return 'Selfie Sticks';
+    if (/mobile stand/.test(value)) return 'Mobile Stands';
+    if (/microphone/.test(value)) return 'Microphones';
+    return 'Creator Gear';
+  }
+  if (category === 'Networking & Connectivity') {
+    if (/router/.test(value)) return 'Wi-Fi Routers';
+    return 'Network Adapters';
+  }
+  if (category === 'CCTV & Smart Security') return /camera memory|memory card/.test(value) ? 'Security Storage' : 'Wi-Fi Cameras';
+  if (/keyboard.*mouse|keyboard & mouse/.test(value)) return 'Keyboard & Mouse Combos';
+  if (/keyboard/.test(value)) return 'Keyboards';
+  if (/mouse pad|mousepad/.test(value)) return 'Mouse Pads';
+  if (/mouse/.test(value)) return 'Mice';
+  if (/headset|headphone/.test(value)) return 'Headsets & Headphones';
+  if (/earphone|earbuds/.test(value)) return 'Earphones & Earbuds';
+  if (/speaker/.test(value)) return 'Speakers';
+  if (/camera memory|memory card/.test(value)) return 'Security Storage';
+  if (/camera/.test(value)) return 'Wi-Fi Cameras';
+  if (/router/.test(value)) return 'Wi-Fi Routers';
+  if (/wifi|wi-fi|bluetooth|bt adapter|network adapter/.test(value)) return 'Network Adapters';
+  if (/powerbank/.test(value)) return 'Power Banks';
+  if (/multiplug|power strip/.test(value)) return 'Power Strips & Multiplugs';
+  if (/power cable/.test(value)) return 'Power Cables';
+  if (/gimbal/.test(value)) return 'Gimbals';
+  if (/tripod|ring light/.test(value)) return 'Tripods & Ring Lights';
+  if (/selfie/.test(value)) return 'Selfie Sticks';
+  if (/mobile stand/.test(value)) return 'Mobile Stands';
+  if (/microphone/.test(value)) return 'Microphones';
+  if (/trimmer/.test(value)) return 'Grooming & Trimmers';
+  if (/fan/.test(value)) return 'Fans & Cooling';
+  if (/usb hub|hub/.test(value)) return 'USB Hubs & Card Readers';
+  if (/flash drive/.test(value)) return 'Flash Drives & Storage';
+  if (/cable|extension/.test(value)) return 'Cables & Adapters';
+  if (/cleaning/.test(value)) return 'Cleaning & Care';
+  return item?.subCategory || 'Other Accessories';
+};
 
 const defaults = {
   brand: 'MacroByte Trade',
@@ -102,7 +145,7 @@ const serviceCatalogue = [
 async function getDb() {
   if (db) return db;
   client = new MongoClient(MONGODB_URI); await client.connect(); db = client.db();
-  await Promise.all([db.collection('admins').createIndex({username:1},{unique:true}), db.collection('services').createIndex({order:1}), db.collection('products').createIndex({order:1}), db.collection('categories').createIndex({slug:1},{unique:true}), db.collection('brands').createIndex({slug:1},{unique:true}), db.collection('orders').createIndex({createdAt:-1})]);
+  await Promise.all([db.collection('admins').createIndex({username:1},{unique:true}), db.collection('services').createIndex({order:1}), db.collection('products').createIndex({order:1}), db.collection('categories').createIndex({slug:1},{unique:true}), db.collection('subcategories').createIndex({parentCategory:1,slug:1},{unique:true}), db.collection('brands').createIndex({slug:1},{unique:true}), db.collection('orders').createIndex({createdAt:-1})]);
   if (!await db.collection('settings').findOne({key:'site'})) await db.collection('settings').insertOne({key:'site', value:defaults});
   else await db.collection('settings').updateOne({key:'site'},{$set:{'value.logoUrl':(await db.collection('settings').findOne({key:'site'})).value?.logoUrl||defaults.logoUrl,'value.integrations.cloudinary':(await db.collection('settings').findOne({key:'site'})).value?.integrations?.cloudinary||defaults.integrations.cloudinary,'value.emailSettings':(await db.collection('settings').findOne({key:'site'})).value?.emailSettings||defaults.emailSettings}});
   if (!await db.collection('services').countDocuments()) await db.collection('services').insertMany(defaultServices);
@@ -121,6 +164,40 @@ async function getDb() {
     await db.collection('categories').deleteMany({});
     if (categories.length) await db.collection('categories').insertMany(categories.sort((a,b)=>a._id.localeCompare(b._id)).map((category,index)=>({name:category._id,slug:slugify(category._id),description:`Browse ${category._id.toLowerCase()} from MacroByte Trade.`,order:index+1,active:true,createdAt:new Date()})));
     await db.collection('settings').insertOne({key:'category-catalogue-v1',createdAt:new Date()});
+  }
+  if (!await db.collection('settings').findOne({key:'subcategory-catalogue-v1'})) {
+    const now = new Date();
+    const products = await db.collection('products').find({}).toArray();
+    for (const product of products) {
+      const subCategory = subCategoryFor(product);
+      await db.collection('products').updateOne({_id:product._id},{$set:{subCategory,updatedAt:now}});
+    }
+    const subcategories = await db.collection('products').aggregate([
+      {$match:{category:{$type:'string',$ne:''},subCategory:{$type:'string',$ne:''}}},
+      {$group:{_id:{parentCategory:'$category',name:'$subCategory'},products:{$sum:1}}},
+      {$sort:{'_id.parentCategory':1,'_id.name':1}}
+    ]).toArray();
+    for (const [index, record] of subcategories.entries()) {
+      const item={parentCategory:record._id.parentCategory,name:record._id.name,slug:slugify(record._id.name),description:`Browse ${record._id.name.toLowerCase()} from MacroByte Trade.`,order:index+1,active:true,createdAt:now};
+      await db.collection('subcategories').updateOne({parentCategory:item.parentCategory,slug:item.slug},{$setOnInsert:item},{upsert:true});
+    }
+    await db.collection('settings').insertOne({key:'subcategory-catalogue-v1',createdAt:now,records:subcategories.length});
+  }
+  if (!await db.collection('settings').findOne({key:'subcategory-catalogue-v2'})) {
+    const now = new Date();
+    const products = await db.collection('products').find({}).toArray();
+    for (const product of products) await db.collection('products').updateOne({_id:product._id},{$set:{subCategory:subCategoryFor(product),updatedAt:now}});
+    const used = await db.collection('products').aggregate([{$group:{_id:{parentCategory:'$category',name:'$subCategory'}}}]).toArray();
+    for (const record of used) {
+      const item={parentCategory:record._id.parentCategory,name:record._id.name,slug:slugify(record._id.name),description:`Browse ${record._id.name.toLowerCase()} from MacroByte Trade.`,active:true,order:0,createdAt:now};
+      await db.collection('subcategories').updateOne({parentCategory:item.parentCategory,slug:item.slug},{$setOnInsert:item},{upsert:true});
+    }
+    const keep = new Set(used.map(record=>`${record._id.parentCategory}|${record._id.name}`));
+    const existing = await db.collection('subcategories').find({}).toArray();
+    for (const item of existing) {
+      if (!keep.has(`${item.parentCategory}|${item.name}`)) await db.collection('subcategories').deleteOne({_id:item._id});
+    }
+    await db.collection('settings').insertOne({key:'subcategory-catalogue-v2',createdAt:now,records:used.length});
   }
   if (!await db.collection('settings').findOne({key:'brand-catalogue-v1'})) {
     const productBrands = await db.collection('products').aggregate([
@@ -164,11 +241,14 @@ api.get('/api/health', async (_q,res)=>{ try { await getDb(); res.json({ok:true,
 api.get('/api/site', async (_q,res)=> { res.json(publicSettings(await siteSettings())); });
 api.get('/api/services', async (_q,res)=> { const d=await getDb(); res.json((await d.collection('services').find({active:true}).sort({order:1}).toArray()).map(clean)); });
 api.get('/api/categories', async (_q,res)=> { const d=await getDb(); res.json((await d.collection('categories').find({active:true}).sort({order:1,name:1}).toArray()).map(clean)); });
+api.get('/api/category-menu', async (_q,res)=> { const d=await getDb(); const [categories,subcategories]=await Promise.all([d.collection('categories').find({active:true}).sort({order:1,name:1}).toArray(),d.collection('subcategories').find({active:true}).sort({order:1,name:1}).toArray()]); res.json(categories.map(category=>({...clean(category),subcategories:subcategories.filter(child=>child.parentCategory===category.name).map(clean)}))); });
+api.get('/api/subcategories', async (req,res)=> { const d=await getDb(); const query={active:true}; if(req.query.category){const category=await d.collection('categories').findOne({slug:req.query.category,active:true});query.parentCategory=category?.name||req.query.category;} res.json((await d.collection('subcategories').find(query).sort({order:1,name:1}).toArray()).map(clean)); });
 api.get('/api/brands', async (_q,res)=> { const d=await getDb(); res.json((await d.collection('brands').find({active:true}).sort({name:1}).toArray()).map(clean)); });
 api.get('/api/products', async (req,res)=> {
   const d=await getDb(); const query={active:true};
   if(req.query.category){const category=await d.collection('categories').findOne({slug:req.query.category,active:true});query.category=category?.name||req.query.category;}
-  if(req.query.q){const safe=String(req.query.q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');query.$or=['name','brand','model','keywords','category'].map(field=>({[field]:{$regex:safe,$options:'i'}}));}
+  if(req.query.subcategory){const subcategory=await d.collection('subcategories').findOne({slug:req.query.subcategory,active:true});query.subCategory=subcategory?.name||req.query.subcategory;}
+  if(req.query.q){const safe=String(req.query.q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');query.$or=['name','brand','model','keywords','category','subCategory'].map(field=>({[field]:{$regex:safe,$options:'i'}}));}
   if(req.query.paged==='1'){const limit=Math.min(Math.max(Number(req.query.limit)||12,1),48),page=Math.max(Number(req.query.page)||1,1),total=await d.collection('products').countDocuments(query),items=await d.collection('products').find(query).sort({order:1,name:1}).skip((page-1)*limit).limit(limit).toArray();return res.json({items:items.map(clean),total,page,limit,totalPages:Math.max(Math.ceil(total/limit),1)});}
   res.json((await d.collection('products').find(query).sort({order:1,name:1}).toArray()).map(clean));
 });
@@ -176,7 +256,7 @@ api.get('/api/reviews', async (req,res)=> { const productId=String(req.query.pro
 api.post('/api/reviews', async (req,res)=> { const productId=String(req.body.productId||'').trim(), productName=String(req.body.productName||'').trim(), name=String(req.body.name||'').trim(), comment=String(req.body.comment||'').trim(), rating=Number(req.body.rating); if(!productId||!productName||name.length<2||name.length>80||comment.length<10||comment.length>1500||!Number.isInteger(rating)||rating<1||rating>5)return res.status(400).json({message:'Please provide your name, a 1–5 rating, and a review of at least 10 characters.'}); const d=await getDb(); await d.collection('reviews').insertOne({productId,productName,name,rating,comment,status:'pending',createdAt:new Date()}); res.status(201).json({ok:true,message:'Thank you. Your review has been submitted for approval.'}); });
 api.post('/api/enquiries', async (req,res)=> { const d=await getDb(); const {name,phone,email,type,subject,message}=req.body; if(!name||!message) return res.status(400).json({message:'Name and details are required.'}); await d.collection('enquiries').insertOne({name,phone,email,type,subject,message,status:'new',createdAt:new Date()}); res.status(201).json({ok:true}); });
 api.post('/api/auth/login', async (req,res)=> { const d=await getDb(); const user=await d.collection('admins').findOne({username:req.body.username}); if(!user || !await bcrypt.compare(req.body.password||'',user.password)) return res.status(401).json({message:'Invalid username or password.'}); res.json({token:jwt.sign({id:user._id.toString(),username:user.username},JWT_SECRET,{expiresIn:'12h'}),username:user.username}); });
-api.get('/api/admin/dashboard',auth,async(_q,res)=> { const d=await getDb(); res.json({services:await d.collection('services').countDocuments(),products:await d.collection('products').countDocuments(),categories:await d.collection('categories').countDocuments(),brands:await d.collection('brands').countDocuments(),orders:await d.collection('orders').countDocuments(),enquiries:await d.collection('enquiries').countDocuments(),newEnquiries:await d.collection('enquiries').countDocuments({status:'new'})}); });
+api.get('/api/admin/dashboard',auth,async(_q,res)=> { const d=await getDb(); res.json({services:await d.collection('services').countDocuments(),products:await d.collection('products').countDocuments(),categories:await d.collection('categories').countDocuments(),subcategories:await d.collection('subcategories').countDocuments(),brands:await d.collection('brands').countDocuments(),orders:await d.collection('orders').countDocuments(),enquiries:await d.collection('enquiries').countDocuments(),newEnquiries:await d.collection('enquiries').countDocuments({status:'new'})}); });
 api.get('/api/admin/site',auth,async(_q,res)=> res.json(adminSettings(await siteSettings())));
 api.put('/api/admin/site',auth,async(req,res)=> res.json(adminSettings(await saveSettings(req.body||{}))));
 api.get('/api/admin/brands',auth,async(_q,res)=>{const d=await getDb();res.json((await d.collection('brands').find().sort({name:1}).toArray()).map(clean));});
@@ -185,14 +265,18 @@ api.put('/api/admin/brands/:id',auth,async(req,res)=>{const d=await getDb(),item
 api.delete('/api/admin/brands/:id',auth,async(req,res)=>{const d=await getDb();await d.collection('brands').deleteOne({_id:objectId(req.params.id)});res.json({ok:true});});
 for (const name of ['services','products']) {
   api.get('/api/admin/'+name,auth,async(_q,res)=>{ const d=await getDb();res.json((await d.collection(name).find().sort({order:1}).toArray()).map(clean)); });
-  api.post('/api/admin/'+name,auth,async(req,res)=>{ const d=await getDb();let item={...req.body,active:req.body.active!==false,order:Number(req.body.order||0),createdAt:new Date()};if(name==='products'){item={...item,slug:slugify(item.slug||`${item.brand||'macrobyte'}-${item.name||'product'}`),stockQty:Number(item.stockQty||0),stockStatus:Number(item.stockQty||0)>0?'In stock':'Stock confirmation required',keywords:[item.brand,item.name,item.model,item.category].filter(Boolean)}}const r=await d.collection(name).insertOne(item);res.status(201).json(clean({...item,_id:r.insertedId})); });
-  api.put('/api/admin/'+name+'/:id',auth,async(req,res)=>{ const d=await getDb();let update={...req.body,order:Number(req.body.order||0),updatedAt:new Date()};if(name==='products'){update={...update,slug:slugify(update.slug||`${update.brand||'macrobyte'}-${update.name||'product'}`),stockQty:Number(update.stockQty||0),stockStatus:Number(update.stockQty||0)>0?'In stock':'Stock confirmation required',keywords:[update.brand,update.name,update.model,update.category].filter(Boolean)}}delete update.id;await d.collection(name).updateOne({_id:objectId(req.params.id)},{$set:update});res.json({ok:true}); });
+  api.post('/api/admin/'+name,auth,async(req,res)=>{ const d=await getDb();let item={...req.body,active:req.body.active!==false,order:Number(req.body.order||0),createdAt:new Date()};if(name==='products'){item={...item,slug:slugify(item.slug||`${item.brand||'macrobyte'}-${item.name||'product'}`),stockQty:Number(item.stockQty||0),stockStatus:Number(item.stockQty||0)>0?'In stock':'Stock confirmation required',keywords:[item.brand,item.name,item.model,item.category,item.subCategory].filter(Boolean)}}const r=await d.collection(name).insertOne(item);res.status(201).json(clean({...item,_id:r.insertedId})); });
+  api.put('/api/admin/'+name+'/:id',auth,async(req,res)=>{ const d=await getDb();let update={...req.body,order:Number(req.body.order||0),updatedAt:new Date()};if(name==='products'){update={...update,slug:slugify(update.slug||`${update.brand||'macrobyte'}-${update.name||'product'}`),stockQty:Number(update.stockQty||0),stockStatus:Number(update.stockQty||0)>0?'In stock':'Stock confirmation required',keywords:[update.brand,update.name,update.model,update.category,update.subCategory].filter(Boolean)}}delete update.id;await d.collection(name).updateOne({_id:objectId(req.params.id)},{$set:update});res.json({ok:true}); });
   api.delete('/api/admin/'+name+'/:id',auth,async(req,res)=>{ const d=await getDb();await d.collection(name).deleteOne({_id:objectId(req.params.id)});res.json({ok:true}); });
 }
 api.get('/api/admin/categories',auth,async(_q,res)=>{const d=await getDb();res.json((await d.collection('categories').find().sort({order:1,name:1}).toArray()).map(clean));});
 api.post('/api/admin/categories',auth,async(req,res)=>{const d=await getDb();const item={name:String(req.body.name||'').trim(),slug:slugify(req.body.slug||req.body.name),description:String(req.body.description||'').trim(),imageUrl:String(req.body.imageUrl||'').trim(),order:Number(req.body.order||0),active:req.body.active!==false,createdAt:new Date()};if(!item.name||!item.slug)return res.status(400).json({message:'Category name is required.'});const r=await d.collection('categories').insertOne(item);res.status(201).json(clean({...item,_id:r.insertedId}));});
 api.put('/api/admin/categories/:id',auth,async(req,res)=>{const d=await getDb();const item={name:String(req.body.name||'').trim(),slug:slugify(req.body.slug||req.body.name),description:String(req.body.description||'').trim(),imageUrl:String(req.body.imageUrl||'').trim(),order:Number(req.body.order||0),active:req.body.active!==false,updatedAt:new Date()};if(!item.name||!item.slug)return res.status(400).json({message:'Category name is required.'});await d.collection('categories').updateOne({_id:objectId(req.params.id)},{$set:item});res.json({ok:true});});
 api.delete('/api/admin/categories/:id',auth,async(req,res)=>{const d=await getDb();const category=await d.collection('categories').findOne({_id:objectId(req.params.id)});if(category&&await d.collection('products').countDocuments({category:category.name}))return res.status(409).json({message:'Move or update products in this category before deleting it.'});await d.collection('categories').deleteOne({_id:objectId(req.params.id)});res.json({ok:true});});
+api.get('/api/admin/subcategories',auth,async(req,res)=>{const d=await getDb(),query={};if(req.query.category)query.parentCategory=req.query.category;res.json((await d.collection('subcategories').find(query).sort({parentCategory:1,order:1,name:1}).toArray()).map(clean));});
+api.post('/api/admin/subcategories',auth,async(req,res)=>{const d=await getDb();const item={parentCategory:String(req.body.parentCategory||'').trim(),name:String(req.body.name||'').trim(),slug:slugify(req.body.slug||req.body.name),description:String(req.body.description||'').trim(),order:Number(req.body.order||0),active:req.body.active!==false,createdAt:new Date()};if(!item.parentCategory||!item.name||!item.slug)return res.status(400).json({message:'Parent category and subcategory name are required.'});const result=await d.collection('subcategories').insertOne(item);res.status(201).json(clean({...item,_id:result.insertedId}));});
+api.put('/api/admin/subcategories/:id',auth,async(req,res)=>{const d=await getDb(),previous=await d.collection('subcategories').findOne({_id:objectId(req.params.id)}),item={parentCategory:String(req.body.parentCategory||'').trim(),name:String(req.body.name||'').trim(),slug:slugify(req.body.slug||req.body.name),description:String(req.body.description||'').trim(),order:Number(req.body.order||0),active:req.body.active!==false,updatedAt:new Date()};if(!item.parentCategory||!item.name||!item.slug)return res.status(400).json({message:'Parent category and subcategory name are required.'});await d.collection('subcategories').updateOne({_id:objectId(req.params.id)},{$set:item});if(previous&&(previous.parentCategory!==item.parentCategory||previous.name!==item.name))await d.collection('products').updateMany({category:previous.parentCategory,subCategory:previous.name},{$set:{category:item.parentCategory,subCategory:item.name,updatedAt:new Date()}});res.json({ok:true});});
+api.delete('/api/admin/subcategories/:id',auth,async(req,res)=>{const d=await getDb(),sub=await d.collection('subcategories').findOne({_id:objectId(req.params.id)});if(sub&&await d.collection('products').countDocuments({category:sub.parentCategory,subCategory:sub.name}))return res.status(409).json({message:'Move products from this subcategory before deleting it.'});await d.collection('subcategories').deleteOne({_id:objectId(req.params.id)});res.json({ok:true});});
 api.post('/api/upload',auth,upload.single('file'),async(req,res)=>{try{if(!req.file)return res.status(400).json({message:'Choose an image file first.'});const settings=await siteSettings(),config=settings.integrations?.cloudinary||{},credentials=cloudinaryConfig(settings);if(!config.enabled||!credentials.cloud_name||!credentials.api_key||!credentials.api_secret)return res.status(400).json({message:'Cloudinary is not connected. Add cloud name, API key and API secret under Settings before uploading.'});cloudinary.config(credentials);const folder=String(config.folder||'macrobyte-trade').replace(/^\/+|\/+$/g,'');const result=await new Promise((resolve,reject)=>{const stream=cloudinary.uploader.upload_stream({folder,resource_type:'image',upload_preset:config.uploadPreset||undefined},(error,value)=>error?reject(error):resolve(value));stream.end(req.file.buffer)});res.json({url:result.secure_url,publicId:result.public_id});}catch(error){res.status(400).json({message:error.message||'Image upload failed.'})}});
 api.post('/api/admin/settings/test-email',auth,async(req,res)=>{try{const settings=await siteSettings(),mail=settings.emailSettings||{},password=decrypt(mail.smtpPassword);if(!mail.smtpHost||!mail.smtpUser||!password)return res.status(400).json({message:'Enter SMTP host, username and password, then save Settings before testing.'});const transporter=nodemailer.createTransport({host:mail.smtpHost,port:Number(mail.smtpPort||465),secure:mail.smtpSecure!==false,auth:{user:mail.smtpUser,pass:password}});await transporter.sendMail({from:`"${mail.senderName||settings.brand||'MacroByte Trade'}" <${mail.smtpUser}>`,to:req.body?.to||mail.forwardingEmail||mail.smtpUser,replyTo:mail.replyTo||undefined,subject:'MacroByte Trade email configuration test',text:'Your SMTP settings are connected successfully.'});res.json({ok:true});}catch(error){res.status(400).json({message:error.message||'Email test failed.'})}});
 api.post('/api/orders',async(req,res)=>{const d=await getDb();const customer=req.body.customer||{},items=Array.isArray(req.body.items)?req.body.items:[];if(!customer.name||!customer.phone||!items.length)return res.status(400).json({message:'Name, phone and at least one item are required.'});const order={customer:{name:String(customer.name).trim(),phone:String(customer.phone).trim(),address:String(customer.address||'').trim(),email:String(customer.email||'').trim()},items:items.map(item=>({productId:String(item.productId||''),name:String(item.name||''),price:String(item.price||''),quantity:Math.max(Number(item.quantity)||1,1)})),status:'new',notes:String(req.body.notes||'').trim(),createdAt:new Date()};const result=await d.collection('orders').insertOne(order);sendOrderEmail(order,result.insertedId.toString());res.status(201).json({ok:true,orderId:result.insertedId.toString()});});

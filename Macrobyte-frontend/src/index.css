@@ -103,7 +103,7 @@ textarea {
   align-items: stretch;
 }
 .mb-category > button {
-  gap: 7px;
+  gap: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -112,21 +112,14 @@ textarea {
   margin: 0 !important;
   font: inherit !important;
 }
-.mb-chevron {
-  width: 12px;
-  height: 8px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  transition: transform 160ms ease;
-}
-.mb-category.open .mb-chevron {
-  transform: rotate(180deg);
-}
 .mb-dropdown {
+  position: absolute;
+  display: none;
   top: calc(100% - 6px);
   left: 50%;
-  width: 248px;
+  width: 270px;
+  max-height: min(560px, calc(100vh - 100px));
+  overflow-y: auto;
   padding: 8px;
   transform: translateX(-50%);
   border: 1px solid #e0e6f1;
@@ -134,13 +127,52 @@ textarea {
   background: #fff;
   box-shadow: 0 16px 36px rgba(23, 39, 92, 0.16);
 }
+.mb-category.open .mb-dropdown {
+  display: grid;
+}
 .mb-dropdown a {
+  display: block;
   padding: 10px 12px;
   border-radius: 9px;
   color: #24375f;
   font-size: 0.82rem;
   font-weight: 650;
   text-decoration: none;
+}
+.mb-category-group {
+  position: relative;
+}
+.mb-parent-category {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+}
+.mb-parent-category::after {
+  content: "›";
+  color: #8b98b4;
+  font-size: 17px;
+  line-height: 1;
+}
+.mb-subcategory-menu {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 8px);
+  display: none;
+  width: 230px;
+  max-height: min(560px, calc(100vh - 100px));
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #e0e6f1;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 16px 36px rgba(23, 39, 92, 0.16);
+}
+.mb-category-group:hover .mb-subcategory-menu,
+.mb-category-group:focus-within .mb-subcategory-menu {
+  display: grid;
+}
+.mb-subcategory-menu a {
+  padding-left: 14px;
 }
 .mb-dropdown a:hover,
 .mb-dropdown a:focus-visible {
@@ -1649,6 +1681,26 @@ textarea {
     margin: 0 0 8px;
     transform: none;
     box-shadow: none;
+  }
+  .mb-category.open .mb-dropdown {
+    display: grid;
+  }
+  .mb-category-group {
+    padding: 0 0 0 10px;
+  }
+  .mb-subcategory-menu {
+    position: static;
+    display: grid;
+    width: auto;
+    max-height: none;
+    margin: 0;
+    padding: 0 0 4px 8px;
+    border: 0;
+    box-shadow: none;
+  }
+  .mb-subcategory-menu a {
+    padding: 8px 12px;
+    color: #62708a;
   }
   .mb-quote {
     display: none;

@@ -58,7 +58,7 @@ function Header() {
     ),
   );
   useEffect(() => {
-    api("/categories")
+    api("/category-menu")
       .then(setCategories)
       .catch(() => setCategories([]));
   }, []);
@@ -113,26 +113,34 @@ function Header() {
               onClick={() => setCategoryOpen(true)}
             >
               <span className="mb-category-label">Categories</span>
-              <svg
-                className="mb-chevron"
-                viewBox="0 0 16 10"
-                aria-hidden="true"
-              >
-                <path d="m2 2 6 6 6-6" />
-              </svg>
             </button>
             <div className="mb-dropdown">
               <Link to="/products" onClick={close}>
                 All categories
               </Link>
               {categories.map((category) => (
-                <Link
-                  key={category.id}
-                  to={`/shop?category=${encodeURIComponent(category.slug)}`}
-                  onClick={close}
-                >
-                  {category.name}
-                </Link>
+                <div className="mb-category-group" key={category.id}>
+                  <Link
+                    className="mb-parent-category"
+                    to={`/shop?category=${encodeURIComponent(category.slug)}`}
+                    onClick={close}
+                  >
+                    {category.name}
+                  </Link>
+                  {category.subcategories?.length > 0 && (
+                    <div className="mb-subcategory-menu">
+                      {category.subcategories.map((subcategory) => (
+                        <Link
+                          key={subcategory.id}
+                          to={`/shop?category=${encodeURIComponent(category.slug)}&subcategory=${encodeURIComponent(subcategory.slug)}`}
+                          onClick={close}
+                        >
+                          {subcategory.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -619,20 +627,23 @@ function Home() {
 function Shop() {
   const [allProducts, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [subcategoryMenu, setSubcategoryMenu] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const category = searchParams.get("category") || "";
+  const subcategory = searchParams.get("subcategory") || "";
   const brand = searchParams.get("brand") || "";
   const minPrice = searchParams.get("minPrice") || "";
   const maxPrice = searchParams.get("maxPrice") || "";
   const availability = searchParams.get("availability") || "";
   const sort = searchParams.get("sort") || "featured";
   useEffect(() => {
-    Promise.all([api("/products"), api("/categories")])
-      .then(([products, list]) => {
+    Promise.all([api("/products"), api("/categories"), api("/category-menu")])
+      .then(([products, list, menu]) => {
         setProducts(products);
         setCategories(list);
+        setSubcategoryMenu(menu);
       })
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));
@@ -652,8 +663,14 @@ function Shop() {
             item.category ===
               categories.find((x) => x.slug === category)?.name ||
             item.category === category) &&
+          (!subcategory ||
+            item.subCategory ===
+              subcategoryMenu
+                .flatMap((item) => item.subcategories || [])
+                .find((item) => item.slug === subcategory)?.name ||
+            item.subCategory === subcategory) &&
           (!query ||
-            `${item.name} ${item.brand} ${item.model} ${item.category}`
+            `${item.name} ${item.brand} ${item.model} ${item.category} ${item.subCategory}`
               .toLowerCase()
               .includes(query.toLowerCase())) &&
           (!brand || item.brand === brand) &&
@@ -667,10 +684,11 @@ function Shop() {
       if (sort === "name") return a.name.localeCompare(b.name);
       return Number(a.order || 0) - Number(b.order || 0);
     });
-  }, [allProducts, availability, brand, categories, category, maxPrice, minPrice, query, sort]);
+  }, [allProducts, availability, brand, categories, category, maxPrice, minPrice, query, sort, subcategory, subcategoryMenu]);
   const update = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
+    if (key === "category") next.delete("subcategory");
     setSearchParams(next, { replace: true });
   };
   const add = (product) => {
@@ -710,13 +728,14 @@ function Shop() {
           </div>
           <div className="catalogue-filter-grid">
             <label>Category<select value={category} onChange={(event) => update("category", event.target.value)}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
+            <label>Subcategory<select value={subcategory} onChange={(event) => update("subcategory", event.target.value)}><option value="">All subcategories</option>{subcategoryMenu.find((item) => item.slug === category)?.subcategories?.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>) || subcategoryMenu.flatMap((item) => item.subcategories || []).map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
             <label>Brand<select value={brand} onChange={(event) => update("brand", event.target.value)}><option value="">All brands</option>{brands.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
             <label>Minimum price<input type="number" min="0" value={minPrice} onChange={(event) => update("minPrice", event.target.value)} placeholder="Any" /></label>
             <label>Maximum price<input type="number" min="0" value={maxPrice} onChange={(event) => update("maxPrice", event.target.value)} placeholder="Any" /></label>
             <label>Availability<select value={availability} onChange={(event) => update("availability", event.target.value)}><option value="">All products</option><option value="in-stock">In stock</option></select></label>
             <label>Sort by<select value={sort} onChange={(event) => update("sort", event.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></label>
           </div>
-          {(query || category || brand || minPrice || maxPrice || availability || sort !== "featured") && <button className="catalogue-clear" type="button" onClick={clearFilters}>Clear all filters</button>}
+          {(query || category || subcategory || brand || minPrice || maxPrice || availability || sort !== "featured") && <button className="catalogue-clear" type="button" onClick={clearFilters}>Clear all filters</button>}
         </aside>
         <section className="catalogue-products" aria-label="Product results">
           <div className="catalogue-results"><p><strong>{products.length}</strong> product{products.length === 1 ? "" : "s"} found</p><span>Stock and final pricing are confirmed before ordering.</span></div>
