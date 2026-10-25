@@ -2744,14 +2744,19 @@ textarea {
 .catalogue-layout .catalogue-controls {
   position: sticky;
   top: 100px;
+  display: flex;
+  height: min(620px, calc(100dvh - 120px));
   margin: 0;
   padding: 26px;
+  flex-direction: column;
+  overflow: hidden;
   border: 1px solid #dbe3f0;
   border-top: 4px solid #f05232;
   border-radius: 18px;
   background: #fff;
 }
 .catalogue-filter-heading {
+  flex: 0 0 auto;
   margin-bottom: 24px;
 }
 .catalogue-filter-heading h2 {
@@ -2768,6 +2773,20 @@ textarea {
 }
 .catalogue-filter-toggle {
   display: none;
+}
+.catalogue-layout .catalogue-filter-content {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #b8c6dc transparent;
+  scrollbar-width: thin;
+}
+.catalogue-layout .catalogue-filter-content::-webkit-scrollbar {
+  width: 6px;
+}
+.catalogue-layout .catalogue-filter-content::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+  background: #b8c6dc;
 }
 .catalogue-layout .catalogue-search {
   padding: 14px;
@@ -2981,7 +3000,11 @@ textarea {
   }
   .catalogue-layout .catalogue-controls {
     position: static;
+    display: block;
+    height: auto;
+    max-height: none;
     margin-bottom: 28px;
+    overflow: visible;
   }
   .catalogue-layout .catalogue-filter-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3080,12 +3103,14 @@ textarea {
   .catalogue-filter-content {
     display: grid;
     grid-template-rows: 0fr;
+    max-height: none;
     overflow: hidden;
     background: #f4f7fc;
     transition: grid-template-rows 240ms ease;
   }
   .catalogue-controls.is-open .catalogue-filter-content {
     grid-template-rows: 1fr;
+    overflow: hidden;
   }
   .catalogue-filter-content-inner {
     min-height: 0;
@@ -3095,8 +3120,11 @@ textarea {
     transition: opacity 160ms ease;
   }
   .catalogue-controls.is-open .catalogue-filter-content-inner {
+    max-height: min(56dvh, 480px);
     padding-top: 18px;
     padding-bottom: 22px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     opacity: 1;
   }
   .catalogue-layout .catalogue-filter-grid {

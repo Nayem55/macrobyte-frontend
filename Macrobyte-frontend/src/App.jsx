@@ -751,9 +751,6 @@ function Shop() {
   const category = searchParams.get("category") || "";
   const subcategory = searchParams.get("subcategory") || "";
   const brand = searchParams.get("brand") || "";
-  const minPrice = searchParams.get("minPrice") || "";
-  const maxPrice = searchParams.get("maxPrice") || "";
-  const availability = searchParams.get("availability") || "";
   const sort = searchParams.get("sort") || "featured";
   useEffect(() => {
     Promise.all([api("/products"), api("/categories"), api("/category-menu")])
@@ -790,10 +787,7 @@ function Shop() {
             `${item.name} ${item.brand} ${item.model} ${item.category} ${item.subCategory}`
               .toLowerCase()
               .includes(query.toLowerCase())) &&
-          (!brand || item.brand === brand) &&
-          (!minPrice || toNumber(item.price) >= Number(minPrice)) &&
-          (!maxPrice || toNumber(item.price) <= Number(maxPrice)) &&
-          (!availability || (availability === "in-stock" && Number(item.stockQty) > 0)),
+          (!brand || item.brand === brand),
       );
     return [...filtered].sort((a, b) => {
       if (sort === "price-low") return toNumber(a.price) - toNumber(b.price);
@@ -801,7 +795,7 @@ function Shop() {
       if (sort === "name") return a.name.localeCompare(b.name);
       return Number(a.order || 0) - Number(b.order || 0);
     });
-  }, [allProducts, availability, brand, categories, category, maxPrice, minPrice, query, sort, subcategory, subcategoryMenu]);
+  }, [allProducts, brand, categories, category, query, sort, subcategory, subcategoryMenu]);
   const update = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
@@ -827,9 +821,6 @@ function Shop() {
     category,
     subcategory,
     brand,
-    minPrice,
-    maxPrice,
-    availability,
     sort !== "featured" ? sort : "",
   ].filter(Boolean).length;
   if (loading) return <PageLoader label="Loading product catalogue" />;
@@ -864,12 +855,9 @@ function Shop() {
                 <label>Category<select value={category} onChange={(event) => update("category", event.target.value)}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
                 <label>Subcategory<select value={subcategory} onChange={(event) => update("subcategory", event.target.value)}><option value="">All subcategories</option>{subcategoryMenu.find((item) => item.slug === category)?.subcategories?.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>) || subcategoryMenu.flatMap((item) => item.subcategories || []).map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
                 <label>Brand<select value={brand} onChange={(event) => update("brand", event.target.value)}><option value="">All brands</option>{brands.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
-                <label>Minimum price<input type="number" min="0" value={minPrice} onChange={(event) => update("minPrice", event.target.value)} placeholder="Any" /></label>
-                <label>Maximum price<input type="number" min="0" value={maxPrice} onChange={(event) => update("maxPrice", event.target.value)} placeholder="Any" /></label>
-                <label>Availability<select value={availability} onChange={(event) => update("availability", event.target.value)}><option value="">All products</option><option value="in-stock">In stock</option></select></label>
                 <label>Sort by<select value={sort} onChange={(event) => update("sort", event.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></label>
               </div>
-              {(query || category || subcategory || brand || minPrice || maxPrice || availability || sort !== "featured") && <button className="catalogue-clear" type="button" onClick={clearFilters}>Clear all filters</button>}
+              {(query || category || subcategory || brand || sort !== "featured") && <button className="catalogue-clear" type="button" onClick={clearFilters}>Clear all filters</button>}
             </div>
           </div>
         </aside>
