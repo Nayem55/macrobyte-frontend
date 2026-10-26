@@ -1,17 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="surface" x1="8" y1="6" x2="56" y2="60" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#284582"/>
-      <stop offset="1" stop-color="#112453"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="21" y1="15" x2="44" y2="45" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#ff7653"/>
-      <stop offset="1" stop-color="#f04427"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="17" fill="url(#surface)"/>
-  <rect x="6.5" y="6.5" width="51" height="51" rx="13" fill="none" stroke="#91a9dc" stroke-opacity=".34"/>
-  <path d="M14 43.5 23.3 18h6.9l9.3 25.5h-6.1l-1.7-5H21.8l-1.7 5H14Zm12.7-17-3 8.3h6l-3-8.3Z" fill="#fff"/>
-  <path d="M37.3 18H44v8.6h8.6V33H44v8.6h-6.7V33h-8.6v-6.4h8.6V18Z" fill="url(#accent)"/>
-  <circle cx="48.7" cy="15.3" r="2.4" fill="#ff7653"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <rect width="96" height="96" rx="20" fill="#ffffff"/>
+  <path d="M13 68 24 29h15l5 23 17-23h17L67 68H54l7-25-18 25H34l-5-25-7 25H13Z" fill="#334e9d"/>
+  <path d="M17 73c17 8 48 9 67-2" fill="none" stroke="#f04b25" stroke-width="5" stroke-linecap="round"/>
+  <g fill="#f04b25">
+    <rect x="43" y="14" width="8" height="8" rx="1"/>
+    <rect x="52" y="23" width="8" height="8" rx="1"/>
+    <rect x="34" y="24" width="8" height="8" rx="1"/>
+    <rect x="43" y="33" width="8" height="8" rx="1"/>
+    <rect x="52" y="42" width="8" height="8" rx="1"/>
+  </g>
 </svg>
