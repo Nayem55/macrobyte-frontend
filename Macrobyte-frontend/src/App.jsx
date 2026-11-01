@@ -8,7 +8,7 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const api = async (path) => {
   const response = await fetch(`/api${path}`);
@@ -60,6 +60,8 @@ function DrawerIcon({ name }) {
 
 function Header() {
   const navigate = useNavigate();
+  const categoryRef = useRef(null);
+  const categoryCloseTimer = useRef(null);
   const [open, setOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState(null);
@@ -83,6 +85,18 @@ function Header() {
       .then(setHeaderProducts)
       .catch(() => setHeaderProducts([]));
   }, []);
+  useEffect(() => {
+    if (!categoryOpen) return undefined;
+    const closeOnOutsideClick = (event) => {
+      if (!categoryRef.current?.contains(event.target)) setCategoryOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    return () => document.removeEventListener("pointerdown", closeOnOutsideClick);
+  }, [categoryOpen]);
+  useEffect(
+    () => () => window.clearTimeout(categoryCloseTimer.current),
+    [],
+  );
   useEffect(() => {
     if (!open) return undefined;
     const closeOnEscape = (event) => {
@@ -115,12 +129,24 @@ function Header() {
     setCategoryOpen(false);
     setExpandedCategory(null);
   };
+  const supportsDesktopHover = () =>
+    window.matchMedia("(min-width: 701px) and (hover: hover) and (pointer: fine)").matches;
   const setCategoryHover = (visible) => {
     // Touch browsers can fire a synthetic mouseenter before the tap. Limiting
     // hover behavior to a genuine fine pointer keeps the first tap reliable.
-    if (window.matchMedia("(min-width: 701px) and (hover: hover) and (pointer: fine)").matches) {
-      setCategoryOpen(visible);
+    if (!supportsDesktopHover()) return;
+    window.clearTimeout(categoryCloseTimer.current);
+    if (visible) {
+      setCategoryOpen(true);
+      return;
     }
+    categoryCloseTimer.current = window.setTimeout(
+      () => setCategoryOpen(false),
+      260,
+    );
+  };
+  const activateDesktopCategory = (categoryId) => {
+    if (supportsDesktopHover()) setExpandedCategory(categoryId);
   };
   const search = (event) => {
     event.preventDefault();
@@ -141,6 +167,11 @@ function Header() {
       )
       .slice(0, 5);
   }, [headerProducts, headerQuery]);
+  const activeDesktopCategory =
+    categories.find(
+      (category) =>
+        category.id === expandedCategory && category.subcategories?.length,
+    ) || categories.find((category) => category.subcategories?.length);
   return (
     <header className={`mb-header${open ? " open" : ""}`}>
       <div className="mb-header-inner">
@@ -160,6 +191,7 @@ function Header() {
           </Link>
           <div
             className={`mb-category${categoryOpen ? " open" : ""}`}
+            ref={categoryRef}
             onMouseEnter={() => setCategoryHover(true)}
             onMouseLeave={() => setCategoryHover(false)}
           >
@@ -167,65 +199,109 @@ function Header() {
               type="button"
               aria-haspopup="true"
               aria-expanded={categoryOpen}
-              onClick={() => setCategoryOpen((value) => !value)}
+              onClick={() => {
+                window.clearTimeout(categoryCloseTimer.current);
+                if (supportsDesktopHover()) {
+                  setCategoryOpen(true);
+                } else {
+                  setCategoryOpen((value) => !value);
+                }
+              }}
             >
               <DrawerIcon name="categories" /><span className="mb-category-label">Categories</span>
               <span className="mb-category-arrow" aria-hidden="true" />
             </button>
             <div className="mb-dropdown">
-              <Link to="/products" onClick={close}>
-                All categories
-              </Link>
-              {categories.map((category) => {
-                const hasSubcategories = category.subcategories?.length > 0;
-                const expanded = expandedCategory === category.id;
-                return (
-                  <div
-                    className={`mb-category-group${expanded ? " expanded" : ""}`}
-                    key={category.id}
-                  >
-                    <div className="mb-category-group-head">
-                      <Link
-                        className="mb-parent-category"
-                        to={`/shop?category=${encodeURIComponent(category.slug)}`}
-                        onClick={close}
-                      >
-                        {category.name}
-                      </Link>
-                      {hasSubcategories && (
-                        <button
-                          className="mb-subcategory-toggle"
-                          type="button"
-                          aria-label={`Toggle ${category.name} subcategories`}
-                          aria-expanded={expanded}
-                          onClick={() =>
-                            setExpandedCategory((value) =>
-                              value === category.id ? null : category.id,
-                            )
-                          }
+              <div className="mb-dropdown-list">
+                <Link className="mb-all-categories" to="/products" onClick={close}>
+                  <span>All categories</span><b aria-hidden="true">→</b>
+                </Link>
+                {categories.map((category) => {
+                  const hasSubcategories = category.subcategories?.length > 0;
+                  const expanded = expandedCategory === category.id;
+                  const desktopActive = activeDesktopCategory?.id === category.id;
+                  return (
+                    <div
+                      className={`mb-category-group${expanded ? " expanded" : ""}${desktopActive ? " desktop-active" : ""}`}
+                      key={category.id}
+                      onMouseEnter={() => activateDesktopCategory(category.id)}
+                      onFocus={() => activateDesktopCategory(category.id)}
+                    >
+                      <div className="mb-category-group-head">
+                        <Link
+                          className="mb-parent-category"
+                          to={`/shop?category=${encodeURIComponent(category.slug)}`}
+                          onClick={close}
                         >
-                          <span aria-hidden="true" />
-                        </button>
+                          {category.name}
+                          {hasSubcategories && <span className="mb-parent-arrow" aria-hidden="true">›</span>}
+                        </Link>
+                        {hasSubcategories && (
+                          <button
+                            className="mb-subcategory-toggle"
+                            type="button"
+                            aria-label={`Toggle ${category.name} subcategories`}
+                            aria-expanded={expanded}
+                            onClick={() =>
+                              setExpandedCategory((value) =>
+                                value === category.id ? null : category.id,
+                              )
+                            }
+                          >
+                            <span aria-hidden="true" />
+                          </button>
+                        )}
+                      </div>
+                      {hasSubcategories && (
+                        <div className="mb-subcategory-menu">
+                          <div className="mb-subcategory-links">
+                            {category.subcategories.map((subcategory) => (
+                              <Link
+                                key={subcategory.id}
+                                to={`/shop?category=${encodeURIComponent(category.slug)}&subcategory=${encodeURIComponent(subcategory.slug)}`}
+                                onClick={close}
+                              >
+                                {subcategory.name}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
-                    {hasSubcategories && (
-                      <div className="mb-subcategory-menu">
-                        <div className="mb-subcategory-links">
-                          {category.subcategories.map((subcategory) => (
-                            <Link
-                              key={subcategory.id}
-                              to={`/shop?category=${encodeURIComponent(category.slug)}&subcategory=${encodeURIComponent(subcategory.slug)}`}
-                              onClick={close}
-                            >
-                              {subcategory.name}
-                            </Link>
-                          ))}
-                        </div>
+                  );
+                })}
+              </div>
+              <div className="mb-dropdown-detail">
+                {activeDesktopCategory ? (
+                  <>
+                    <div className="mb-dropdown-detail-head">
+                      <div>
+                        <span>Browse by type</span>
+                        <strong>{activeDesktopCategory.name}</strong>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                      <Link
+                        to={`/shop?category=${encodeURIComponent(activeDesktopCategory.slug)}`}
+                        onClick={close}
+                      >
+                        View all
+                      </Link>
+                    </div>
+                    <div className="mb-dropdown-detail-links">
+                      {activeDesktopCategory.subcategories.map((subcategory) => (
+                        <Link
+                          key={subcategory.id}
+                          to={`/shop?category=${encodeURIComponent(activeDesktopCategory.slug)}&subcategory=${encodeURIComponent(subcategory.slug)}`}
+                          onClick={close}
+                        >
+                          <span>{subcategory.name}</span><b aria-hidden="true">→</b>
+                        </Link>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p>Select a category to browse its product types.</p>
+                )}
+              </div>
             </div>
           </div>
           <Link className="mb-drawer-link" to="/brands" onClick={close}>
@@ -358,35 +434,6 @@ function Footer() {
         © {new Date().getFullYear()} MacroByte Trade. All rights reserved.
       </div>
     </footer>
-  );
-}
-
-function WhatsAppButton() {
-  const [phone, setPhone] = useState("");
-  useEffect(() => {
-    api("/site")
-      .then((site) => setPhone(site?.contact?.whatsapp || site?.contact?.phone || ""))
-      .catch(() => setPhone(""));
-  }, []);
-  const number = phone.replace(/\D/g, "");
-  const configured = number.length >= 10 && !/^8800+$/.test(number);
-  const href = configured
-    ? `https://wa.me/${number}?text=${encodeURIComponent("Hello MacroByte Trade, I would like some assistance.")}`
-    : "/contact";
-  return (
-    <a
-      className="whatsapp-float"
-      href={href}
-      target={configured ? "_blank" : undefined}
-      rel={configured ? "noreferrer" : undefined}
-      aria-label={configured ? "Message MacroByte Trade on WhatsApp" : "Contact MacroByte Trade"}
-      title={configured ? "Message us on WhatsApp" : "Contact us"}
-    >
-      <svg viewBox="0 0 32 32" aria-hidden="true">
-        <path d="M16 4.2a11.5 11.5 0 0 0-9.8 17.5L4.6 27l5.5-1.5A11.5 11.5 0 1 0 16 4.2Zm0 20.7a9.2 9.2 0 0 1-4.7-1.3l-.4-.2-3.2.8.9-3.1-.2-.4A9.2 9.2 0 1 1 16 24.9Zm5-6.9c-.3-.1-1.8-.9-2.1-1s-.5-.1-.7.2-.8 1-.9 1.1-.4.2-.7.1a7.5 7.5 0 0 1-2.2-1.4 8.2 8.2 0 0 1-1.5-1.9c-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.4.3-.6s0-.4 0-.6c-.1-.1-.7-1.7-.9-2.3-.3-.7-.5-.6-.7-.6h-.6c-.2 0-.6.1-.9.5s-1.2 1.1-1.2 2.7 1.3 3.1 1.5 3.3a10.5 10.5 0 0 0 4 3.5c.6.2 1 .4 1.4.5.6.2 1.2.2 1.6.1.5-.1 1.8-.7 2-1.4s.3-1.3.2-1.4-.2-.2-.5-.3Z" />
-      </svg>
-      <span>WhatsApp</span>
-    </a>
   );
 }
 
@@ -1440,7 +1487,6 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
-      <WhatsAppButton />
     </>
   );
 }
